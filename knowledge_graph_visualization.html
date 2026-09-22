@@ -1,0 +1,237 @@
+<title>DTO Knowledge Graph</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/dist/vis-network.min.js"></script>
+<style>
+:root{
+  --ink:#15191c; --ink2:#454f56; --ink3:#78848c;
+  --ground:#faf9f7; --panel:#ffffff; --panel2:#f0eeea;
+  --rule:#dedad4; --rule2:#c6c1b9;
+  --accent:#0f5b4c; --accent-soft:#e2efe9;
+  --seizing:#0f5b4c; --contraband:#9a5b12; --place:#2a5578;
+  --agency:#6b3766; --article:#8f3030; --literal:#7d8790; --currency:#5c6b22;
+  --shadow:0 1px 3px rgba(20,24,28,.08);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#e6e9e6; --ink2:#a8b2b6; --ink3:#78848a;
+  --ground:#101413; --panel:#171c1b; --panel2:#1e2422;
+  --rule:#2b3331; --rule2:#3d4643;
+  --accent:#63c0a6; --accent-soft:#172c26;
+  --seizing:#63c0a6; --contraband:#d9a05b; --place:#7fb0da;
+  --agency:#c08fbb; --article:#e08b8b; --literal:#8f9aa1; --currency:#a9bd63;
+  --shadow:0 1px 3px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --ink:#e6e9e6; --ink2:#a8b2b6; --ink3:#78848a;
+  --ground:#101413; --panel:#171c1b; --panel2:#1e2422;
+  --rule:#2b3331; --rule2:#3d4643;
+  --accent:#63c0a6; --accent-soft:#172c26;
+  --seizing:#63c0a6; --contraband:#d9a05b; --place:#7fb0da;
+  --agency:#c08fbb; --article:#e08b8b; --literal:#8f9aa1; --currency:#a9bd63;
+  --shadow:0 1px 3px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;line-height:1.5}
+.app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+@media(max-width:820px){.app{grid-template-columns:1fr}}
+
+aside{background:var(--panel);border-right:1px solid var(--rule);padding:22px 20px;
+  display:flex;flex-direction:column;gap:22px}
+@media(max-width:820px){aside{border-right:none;border-bottom:1px solid var(--rule)}}
+h1{font-size:17px;font-weight:700;margin:0 0 3px;letter-spacing:-.01em}
+.sub{font-size:12px;color:var(--ink3);margin:0}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
+  border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.stat{background:var(--panel);padding:9px 11px}
+.stat .n{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat .l{font-size:10.5px;color:var(--ink3);margin-top:1px;line-height:1.25}
+
+.views{display:flex;flex-direction:column;gap:4px}
+.views button{all:unset;cursor:pointer;padding:9px 12px;border-radius:4px;font-size:13px;
+  font-weight:500;color:var(--ink2);border:1px solid transparent;transition:.12s}
+.views button:hover{background:var(--panel2)}
+.views button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent);
+  border-color:var(--accent);font-weight:600}
+.views button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.vh{font-size:10.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:8px}
+
+.legend{display:flex;flex-direction:column;gap:6px;font-size:12px}
+.lg{display:flex;align-items:center;gap:8px;color:var(--ink2)}
+.dot{width:11px;height:11px;border-radius:50%;flex:none}
+
+main{position:relative;display:flex;flex-direction:column;min-width:0}
+.bar{padding:14px 22px;border-bottom:1px solid var(--rule);background:var(--panel);
+  display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between}
+.bar h2{font-size:15px;font-weight:600;margin:0}
+.bar p{margin:0;font-size:12.5px;color:var(--ink3);max-width:70ch}
+.pick{display:flex;flex-wrap:wrap;gap:6px}
+.pick button{all:unset;cursor:pointer;font-size:11.5px;padding:5px 9px;border-radius:3px;
+  border:1px solid var(--rule2);color:var(--ink2);font-family:"IBM Plex Mono",monospace}
+.pick button[aria-selected="true"]{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.pick button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+#net{flex:1;min-height:520px}
+.pane{flex:1;overflow:auto;padding:22px}
+table{border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;font-weight:500}
+thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);
+  font-weight:600;position:sticky;top:0;background:var(--ground)}
+.cell{border-radius:3px;padding:4px 7px;display:inline-block;min-width:44px;text-align:right}
+.note{font-size:12px;color:var(--ink3);margin-top:16px;max-width:72ch;line-height:1.55}
+code{font-family:"IBM Plex Mono",monospace;font-size:.92em;background:var(--panel2);
+  padding:1px 4px;border-radius:2px}
+</style>
+
+<div class="app">
+<aside>
+  <div>
+    <h1>DTO Knowledge Graph</h1>
+    <p class="sub">Drug Trafficking Ontology, populated</p>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div>
+    <div class="vh">View</div>
+    <div class="views" id="views">
+      <button data-v="schema" aria-selected="true">Ontology schema</button>
+      <button data-v="example">Extracted incidents</button>
+      <button data-v="flows">Country &times; drug</button>
+    </div>
+  </div>
+  <div id="legendWrap">
+    <div class="vh">Legend</div>
+    <div class="legend" id="legend"></div>
+  </div>
+</aside>
+
+<main>
+  <div class="bar">
+    <div><h2 id="title"></h2><p id="desc"></p></div>
+    <div class="pick" id="pick"></div>
+  </div>
+  <div id="net"></div>
+  <div class="pane" id="pane" hidden></div>
+</main>
+</div>
+
+<script>
+const DATA = {"schema":{"nodes":[{"id":"dto:Asset","label":"Asset","ns":"dto"},{"id":"dto:Illegal_action","label":"Illegal action","ns":"dto"},{"id":"dto:Legal_entity","label":"Legal entity","ns":"dto"},{"id":"dto:Case","label":"Case","ns":"dto"},{"id":"dto:Seizing","label":"Seizing","ns":"dto"},{"id":"dtox:SeizureLocationType","label":"SeizureLocationType","ns":"dtox"},{"id":"dto:Contraband","label":"Contraband","ns":"dto"},{"id":"dtox:Drug","label":"Drug","ns":"dtox"},{"id":"dtox:Place","label":"Place","ns":"dtox"},{"id":"dtox:Country","label":"Country","ns":"dtox"},{"id":"dto:Police","label":"Police","ns":"dto"},{"id":"dto:Person","label":"Person","ns":"dto"},{"id":"dto:Organization","label":"Organization","ns":"dto"},{"id":"dto:Legal_action","label":"Legal action","ns":"dto"},{"id":"dto:Syndicate","label":"Syndicate","ns":"dto"},{"id":"dto:Currency","label":"Currency","ns":"dto"},{"id":"dto:Product","label":"Product","ns":"dto"},{"id":"dto:Search","label":"Search","ns":"dto"}],"edges":[{"from":"dto:Asset","to":"dto:Illegal_action","label":"amassedThrough","ns":"dto"},{"from":"dto:Legal_entity","to":"dto:Case","label":"conductsInvestigation","ns":"dto"},{"from":"dto:Seizing","to":"dtox:SeizureLocationType","label":"atLocationType","ns":"dtox"},{"from":"dto:Contraband","to":"dtox:Drug","label":"hasDrugType","ns":"dtox"},{"from":"dto:Seizing","to":"dto:Contraband","label":"seizureOf","ns":"dtox"},{"from":"dtox:Place","to":"dtox:Country","label":"withinCountry","ns":"dtox"},{"from":"dto:Police","to":"dto:Person","label":"hasArrested","ns":"dto"},{"from":"dto:Organization","to":"dto:Person","label":"hasLiabilityTowards","ns":"dto"},{"from":"dto:Legal_entity","to":"dto:Case","label":"hasRegisteredCase","ns":"dto"},{"from":"dto:Police","to":"dto:Contraband","label":"hasSeized","ns":"dto"},{"from":"dto:Person","to":"dto:Legal_action","label":"isAccusedOf","ns":"dto"},{"from":"dto:Person","to":"dto:Person","label":"isArrestedBy","ns":"dto"},{"from":"dto:Person","to":"dto:Illegal_action","label":"isArrestedFor","ns":"dto"},{"from":"dto:Person","to":"dto:Organization","label":"isFoundingMemberOf","ns":"dto"},{"from":"dto:Person","to":"dto:Case","label":"isInvolvedIn","ns":"dto"},{"from":"dto:Person","to":"dto:Police","label":"isMemberOf","ns":"dto"},{"from":"dto:Person","to":"dto:Syndicate","label":"isMemberOf","ns":"dto"},{"from":"dto:Asset","to":"dto:Person","label":"isOwnedBy","ns":"dto"},{"from":"dto:Asset","to":"dto:Currency","label":"isWorth","ns":"dto"},{"from":"dto:Contraband","to":"dto:Currency","label":"isWorth","ns":"dto"},{"from":"dto:Person","to":"dto:Contraband","label":"possesses","ns":"dto"},{"from":"dto:Organization","to":"dto:Product","label":"produces","ns":"dto"},{"from":"dto:Asset","to":"dto:Illegal_action","label":"resultsFrom","ns":"dto"},{"from":"dto:Search","to":"dto:Person","label":"searchesLocation","ns":"dto"},{"from":"dto:Person","to":"dto:Person","label":"securesReleaseOf","ns":"dto"},{"from":"dto:Person","to":"dto:Contraband","label":"smuggles","ns":"dto"},{"from":"dto:Search","to":"dto:Legal_action","label":"subClassOf","ns":"sub"},{"from":"dto:Seizing","to":"dto:Legal_action","label":"subClassOf","ns":"sub"},{"from":"dto:Syndicate","to":"dto:Organization","label":"subClassOf","ns":"sub"},{"from":"dto:Police","to":"dto:Organization","label":"subClassOf","ns":"sub"},{"from":"dtox:Country","to":"dtox:Place","label":"subClassOf","ns":"sub"},{"from":"dtox:Drug","to":"dto:Contraband","label":"subClassOf","ns":"sub"}]},"examples":[{"id":"seizure/ncb_02893","headline":"Heroin Seizure In Jammu Kashmir Unmasks Suspected Pakistan-Based Drug-Terror Syndicate","graph":{"nodes":[{"id":"seizure/ncb_02893","label":"ncb_02893","kind":"Seizing"},{"id":"agency/BSF","label":"Border Security Force","kind":"Agency"},{"id":"agency/DRI","label":"Directorate of Revenue Intelligence","kind":"Agency"},{"id":"agency/ED","label":"Enforcement Directorate","kind":"Agency"},{"id":"agency/EXCISE","label":"Excise Department","kind":"Agency"},{"id":"agency/NCB","label":"Narcotics Control Bureau","kind":"Agency"},{"id":"agency/POLICE","label":"Police","kind":"Agency"},{"id":"seizure/ncb_02893#dtox:hasDate","label":"2026-09-04","kind":"Literal"},{"id":"dtox:IncidentLevel","label":"Incident level","kind":"Scope"},{"id":"place/admin_IND_Delhi","label":"Delhi, India","kind":"Place"},{"id":"place/country_IND","label":"India","kind":"Place"},{"id":"article/ncb_02893","label":"Heroin Seizure In Jammu Kashmir Unmasks Suspected Pakistan-B","kind":"Article"},{"id":"place/country_PAK","label":"Pakistan","kind":"Place"},{"id":"source/NCB_News_Bulletin","label":"NCB News Bulletin (daily press digest)","kind":"Source"},{"id":"contraband/ncb_02893_0","label":"Heroin","kind":"Contraband"},{"id":"contraband/ncb_02893_0#dtox:hasQuantity","label":"11066.0","kind":"Literal"},{"id":"contraband/ncb_02893_0#dtox:hasUnit","label":"kg","kind":"Literal"}],"edges":[{"from":"seizure/ncb_02893","to":"agency/BSF","label":"conductedBy"},{"from":"seizure/ncb_02893","to":"agency/DRI","label":"conductedBy"},{"from":"seizure/ncb_02893","to":"agency/ED","label":"conductedBy"},{"from":"seizure/ncb_02893","to":"agency/EXCISE","label":"conductedBy"},{"from":"seizure/ncb_02893","to":"agency/NCB","label":"conductedBy"},{"from":"seizure/ncb_02893","to":"agency/POLICE","label":"conductedBy"},{"from":"seizure/ncb_02893","to":"seizure/ncb_02893#dtox:hasDate","label":"hasDate"},{"from":"seizure/ncb_02893","to":"dtox:IncidentLevel","label":"hasReportScope"},{"from":"seizure/ncb_02893","to":"place/admin_IND_Delhi","label":"occurredAt"},{"from":"place/admin_IND_Delhi","to":"place/country_IND","label":"withinCountry"},{"from":"seizure/ncb_02893","to":"article/ncb_02893","label":"reportedIn"},{"from":"article/ncb_02893","to":"place/country_PAK","label":"occurredAt"},{"from":"article/ncb_02893","to":"source/NCB_News_Bulletin","label":"reportedIn"},{"from":"seizure/ncb_02893","to":"contraband/ncb_02893_0","label":"seizureOf"},{"from":"contraband/ncb_02893_0","to":"article/ncb_02893","label":"reportedIn"},{"from":"contraband/ncb_02893_0","to":"contraband/ncb_02893_0#dtox:hasQuantity","label":"hasQuantity"},{"from":"contraband/ncb_02893_0","to":"contraband/ncb_02893_0#dtox:hasUnit","label":"hasUnit"}]}},{"id":"seizure/ncb_00161","headline":"DRI seizes codeine cough syrup worth Rs 6.54 crore at Agartala railway station, one held","graph":{"nodes":[{"id":"seizure/ncb_00161","label":"ncb_00161","kind":"Seizing"},{"id":"agency/AR","label":"Assam Rifles","kind":"Agency"},{"id":"agency/DRI","label":"Directorate of Revenue Intelligence","kind":"Agency"},{"id":"agency/POLICE","label":"Police","kind":"Agency"},{"id":"agency/RPF","label":"Railway Protection Force","kind":"Agency"},{"id":"seizure/ncb_00161#dtox:hasDate","label":"2026-07-02","kind":"Literal"},{"id":"dtox:IncidentLevel","label":"Incident level","kind":"Scope"},{"id":"place/admin_IND_Assam","label":"Assam, India","kind":"Place"},{"id":"place/country_IND","label":"India","kind":"Place"},{"id":"article/ncb_00161","label":"DRI seizes codeine cough syrup worth Rs 6.54 crore at Agarta","kind":"Article"},{"id":"source/NCB_News_Bulletin","label":"NCB News Bulletin (daily press digest)","kind":"Source"},{"id":"contraband/ncb_00161_0","label":"Codeine","kind":"Contraband"},{"id":"currency/ncb_00161","label":"ncb_00161","kind":"Currency"},{"id":"contraband/ncb_00161_0#dtox:hasQuantity","label":"55626.0","kind":"Literal"},{"id":"contraband/ncb_00161_0#dtox:hasUnit","label":"unit","kind":"Literal"}],"edges":[{"from":"seizure/ncb_00161","to":"agency/AR","label":"conductedBy"},{"from":"seizure/ncb_00161","to":"agency/DRI","label":"conductedBy"},{"from":"seizure/ncb_00161","to":"agency/POLICE","label":"conductedBy"},{"from":"seizure/ncb_00161","to":"agency/RPF","label":"conductedBy"},{"from":"seizure/ncb_00161","to":"seizure/ncb_00161#dtox:hasDate","label":"hasDate"},{"from":"seizure/ncb_00161","to":"dtox:IncidentLevel","label":"hasReportScope"},{"from":"seizure/ncb_00161","to":"place/admin_IND_Assam","label":"occurredAt"},{"from":"place/admin_IND_Assam","to":"place/country_IND","label":"withinCountry"},{"from":"seizure/ncb_00161","to":"article/ncb_00161","label":"reportedIn"},{"from":"article/ncb_00161","to":"source/NCB_News_Bulletin","label":"reportedIn"},{"from":"seizure/ncb_00161","to":"contraband/ncb_00161_0","label":"seizureOf"},{"from":"contraband/ncb_00161_0","to":"article/ncb_00161","label":"reportedIn"},{"from":"contraband/ncb_00161_0","to":"currency/ncb_00161","label":"isWorth"},{"from":"contraband/ncb_00161_0","to":"contraband/ncb_00161_0#dtox:hasQuantity","label":"hasQuantity"},{"from":"contraband/ncb_00161_0","to":"contraband/ncb_00161_0#dtox:hasUnit","label":"hasUnit"}]}},{"id":"seizure/ncb_00580","headline":"Railway Protection Force intensifies anti-crime drive, seizes drugs, rescues seven children","graph":{"nodes":[{"id":"seizure/ncb_00580","label":"ncb_00580","kind":"Seizing"},{"id":"agency/EXCISE","label":"Excise Department","kind":"Agency"},{"id":"agency/GRP","label":"Government Railway Police","kind":"Agency"},{"id":"agency/POLICE","label":"Police","kind":"Agency"},{"id":"agency/RPF","label":"Railway Protection Force","kind":"Agency"},{"id":"seizure/ncb_00580#dtox:hasDate","label":"2026-07-13","kind":"Literal"},{"id":"dtox:IncidentLevel","label":"Incident level","kind":"Scope"},{"id":"place/country_IND","label":"India","kind":"Place"},{"id":"article/ncb_00580","label":"Railway Protection Force intensifies anti-crime drive, seize","kind":"Article"},{"id":"source/NCB_News_Bulletin","label":"NCB News Bulletin (daily press digest)","kind":"Source"},{"id":"contraband/ncb_00580_0","label":"Cannabis herb (marijuana)","kind":"Contraband"},{"id":"currency/ncb_00580","label":"ncb_00580","kind":"Currency"},{"id":"contraband/ncb_00580_0#dtox:hasQuantity","label":"15.0","kind":"Literal"},{"id":"contraband/ncb_00580_0#dtox:hasUnit","label":"kg","kind":"Literal"}],"edges":[{"from":"seizure/ncb_00580","to":"agency/EXCISE","label":"conductedBy"},{"from":"seizure/ncb_00580","to":"agency/GRP","label":"conductedBy"},{"from":"seizure/ncb_00580","to":"agency/POLICE","label":"conductedBy"},{"from":"seizure/ncb_00580","to":"agency/RPF","label":"conductedBy"},{"from":"seizure/ncb_00580","to":"seizure/ncb_00580#dtox:hasDate","label":"hasDate"},{"from":"seizure/ncb_00580","to":"dtox:IncidentLevel","label":"hasReportScope"},{"from":"seizure/ncb_00580","to":"place/country_IND","label":"occurredAt"},{"from":"seizure/ncb_00580","to":"article/ncb_00580","label":"reportedIn"},{"from":"article/ncb_00580","to":"source/NCB_News_Bulletin","label":"reportedIn"},{"from":"seizure/ncb_00580","to":"contraband/ncb_00580_0","label":"seizureOf"},{"from":"contraband/ncb_00580_0","to":"article/ncb_00580","label":"reportedIn"},{"from":"contraband/ncb_00580_0","to":"currency/ncb_00580","label":"isWorth"},{"from":"contraband/ncb_00580_0","to":"contraband/ncb_00580_0#dtox:hasQuantity","label":"hasQuantity"},{"from":"contraband/ncb_00580_0","to":"contraband/ncb_00580_0#dtox:hasUnit","label":"hasUnit"}]}},{"id":"seizure/ncb_02155","headline":"Rs 6.54-Crore Phensedyl Seizure at Agartala: Tripura Crime Branch Arrests Three Accused from Kolkata","graph":{"nodes":[{"id":"seizure/ncb_02155","label":"ncb_02155","kind":"Seizing"},{"id":"agency/AR","label":"Assam Rifles","kind":"Agency"},{"id":"agency/DRI","label":"Directorate of Revenue Intelligence","kind":"Agency"},{"id":"agency/POLICE","label":"Police","kind":"Agency"},{"id":"agency/RPF","label":"Railway Protection Force","kind":"Agency"},{"id":"seizure/ncb_02155#dtox:hasDate","label":"2026-08-19","kind":"Literal"},{"id":"dtox:IncidentLevel","label":"Incident level","kind":"Scope"},{"id":"place/admin_IND_Assam","label":"Assam, India","kind":"Place"},{"id":"place/country_IND","label":"India","kind":"Place"},{"id":"article/ncb_02155","label":"Rs 6.54-Crore Phensedyl Seizure at Agartala: Tripura Crime B","kind":"Article"},{"id":"source/NCB_News_Bulletin","label":"NCB News Bulletin (daily press digest)","kind":"Source"},{"id":"contraband/ncb_02155_0","label":"Codeine","kind":"Contraband"},{"id":"currency/ncb_02155","label":"ncb_02155","kind":"Currency"},{"id":"contraband/ncb_02155_0#dtox:hasQuantity","label":"55626.0","kind":"Literal"},{"id":"contraband/ncb_02155_0#dtox:hasUnit","label":"unit","kind":"Literal"}],"edges":[{"from":"seizure/ncb_02155","to":"agency/AR","label":"conductedBy"},{"from":"seizure/ncb_02155","to":"agency/DRI","label":"conductedBy"},{"from":"seizure/ncb_02155","to":"agency/POLICE","label":"conductedBy"},{"from":"seizure/ncb_02155","to":"agency/RPF","label":"conductedBy"},{"from":"seizure/ncb_02155","to":"seizure/ncb_02155#dtox:hasDate","label":"hasDate"},{"from":"seizure/ncb_02155","to":"dtox:IncidentLevel","label":"hasReportScope"},{"from":"seizure/ncb_02155","to":"place/admin_IND_Assam","label":"occurredAt"},{"from":"place/admin_IND_Assam","to":"place/country_IND","label":"withinCountry"},{"from":"seizure/ncb_02155","to":"article/ncb_02155","label":"reportedIn"},{"from":"article/ncb_02155","to":"source/NCB_News_Bulletin","label":"reportedIn"},{"from":"seizure/ncb_02155","to":"contraband/ncb_02155_0","label":"seizureOf"},{"from":"contraband/ncb_02155_0","to":"article/ncb_02155","label":"reportedIn"},{"from":"contraband/ncb_02155_0","to":"currency/ncb_02155","label":"isWorth"},{"from":"contraband/ncb_02155_0","to":"contraband/ncb_02155_0#dtox:hasQuantity","label":"hasQuantity"},{"from":"contraband/ncb_02155_0","to":"contraband/ncb_02155_0#dtox:hasUnit","label":"hasUnit"}]}},{"id":"seizure/ncb_03159","headline":"Twelve children rescued from suspected traffickers in Gonda, UP","graph":{"nodes":[{"id":"seizure/ncb_03159","label":"ncb_03159","kind":"Seizing"},{"id":"agency/GRP","label":"Government Railway Police","kind":"Agency"},{"id":"agency/NCB","label":"Narcotics Control Bureau","kind":"Agency"},{"id":"agency/POLICE","label":"Police","kind":"Agency"},{"id":"agency/RPF","label":"Railway Protection Force","kind":"Agency"},{"id":"seizure/ncb_03159#dtox:hasDate","label":"2026-09-12","kind":"Literal"},{"id":"dtox:IncidentLevel","label":"Incident level","kind":"Scope"},{"id":"place/admin_IND_Bihar","label":"Bihar, India","kind":"Place"},{"id":"place/country_IND","label":"India","kind":"Place"},{"id":"article/ncb_03159","label":"Twelve children rescued from suspected traffickers in Gonda,","kind":"Article"},{"id":"source/NCB_News_Bulletin","label":"NCB News Bulletin (daily press digest)","kind":"Source"},{"id":"contraband/ncb_03159_0","label":"Heroin","kind":"Contraband"},{"id":"currency/ncb_03159","label":"ncb_03159","kind":"Currency"},{"id":"contraband/ncb_03159_0#dtox:hasQuantity","label":"1.168","kind":"Literal"},{"id":"contraband/ncb_03159_0#dtox:hasUnit","label":"kg","kind":"Literal"}],"edges":[{"from":"seizure/ncb_03159","to":"agency/GRP","label":"conductedBy"},{"from":"seizure/ncb_03159","to":"agency/NCB","label":"conductedBy"},{"from":"seizure/ncb_03159","to":"agency/POLICE","label":"conductedBy"},{"from":"seizure/ncb_03159","to":"agency/RPF","label":"conductedBy"},{"from":"seizure/ncb_03159","to":"seizure/ncb_03159#dtox:hasDate","label":"hasDate"},{"from":"seizure/ncb_03159","to":"dtox:IncidentLevel","label":"hasReportScope"},{"from":"seizure/ncb_03159","to":"place/admin_IND_Bihar","label":"occurredAt"},{"from":"place/admin_IND_Bihar","to":"place/country_IND","label":"withinCountry"},{"from":"seizure/ncb_03159","to":"article/ncb_03159","label":"reportedIn"},{"from":"article/ncb_03159","to":"source/NCB_News_Bulletin","label":"reportedIn"},{"from":"seizure/ncb_03159","to":"contraband/ncb_03159_0","label":"seizureOf"},{"from":"contraband/ncb_03159_0","to":"article/ncb_03159","label":"reportedIn"},{"from":"contraband/ncb_03159_0","to":"currency/ncb_03159","label":"isWorth"},{"from":"contraband/ncb_03159_0","to":"contraband/ncb_03159_0#dtox:hasQuantity","label":"hasQuantity"},{"from":"contraband/ncb_03159_0","to":"contraband/ncb_03159_0#dtox:hasUnit","label":"hasUnit"}]}},{"id":"seizure/ncb_00120","headline":"ANTI-NARCOTICS DRIVE IN KERALA \u2013 RECOVERY OF SYNTHETIC DRUGS FROM A WOMAN\u2019S PRIVATE PART \u2013 THE APPLICABILITY OF SECTION 50 OF THE NDPS ACT, 1985","graph":{"nodes":[{"id":"seizure/ncb_00120","label":"ncb_00120","kind":"Seizing"},{"id":"agency/CUSTOMS","label":"Customs","kind":"Agency"},{"id":"agency/NCB","label":"Narcotics Control Bureau","kind":"Agency"},{"id":"agency/POLICE","label":"Police","kind":"Agency"},{"id":"seizure/ncb_00120#dtox:hasDate","label":"2026-07-01","kind":"Literal"},{"id":"dtox:IncidentLevel","label":"Incident level","kind":"Scope"},{"id":"place/admin_IND_Delhi","label":"Delhi, India","kind":"Place"},{"id":"place/country_IND","label":"India","kind":"Place"},{"id":"article/ncb_00120","label":"ANTI-NARCOTICS DRIVE IN KERALA \u2013 RECOVERY OF SYNTHETIC DRUGS","kind":"Article"},{"id":"source/NCB_News_Bulletin","label":"NCB News Bulletin (daily press digest)","kind":"Source"},{"id":"contraband/ncb_00120_0","label":"MDMA","kind":"Contraband"},{"id":"contraband/ncb_00120_0#dtox:hasQuantity","label":"308.0","kind":"Literal"},{"id":"contraband/ncb_00120_0#dtox:hasUnit","label":"g","kind":"Literal"}],"edges":[{"from":"seizure/ncb_00120","to":"agency/CUSTOMS","label":"conductedBy"},{"from":"seizure/ncb_00120","to":"agency/NCB","label":"conductedBy"},{"from":"seizure/ncb_00120","to":"agency/POLICE","label":"conductedBy"},{"from":"seizure/ncb_00120","to":"seizure/ncb_00120#dtox:hasDate","label":"hasDate"},{"from":"seizure/ncb_00120","to":"dtox:IncidentLevel","label":"hasReportScope"},{"from":"seizure/ncb_00120","to":"place/admin_IND_Delhi","label":"occurredAt"},{"from":"place/admin_IND_Delhi","to":"place/country_IND","label":"withinCountry"},{"from":"seizure/ncb_00120","to":"article/ncb_00120","label":"reportedIn"},{"from":"article/ncb_00120","to":"source/NCB_News_Bulletin","label":"reportedIn"},{"from":"seizure/ncb_00120","to":"contraband/ncb_00120_0","label":"seizureOf"},{"from":"contraband/ncb_00120_0","to":"article/ncb_00120","label":"reportedIn"},{"from":"contraband/ncb_00120_0","to":"contraband/ncb_00120_0#dtox:hasQuantity","label":"hasQuantity"},{"from":"contraband/ncb_00120_0","to":"contraband/ncb_00120_0#dtox:hasUnit","label":"hasUnit"}]}}],"flows":{"countries":["Pakistan","Afghanistan","India","Myanmar","Sri Lanka","Maldives","Bangladesh","Nepal","Thailand"],"drugs":["Cannabis resin (hashish)","Heroin","Opium","Methamphetamine","Cannabis herb (marijuana)","Amphetamine","Non-specified stimulants","Non-specified amphetamine-type stimulants (excluding ecstasy)","Non-specified cannabis-type (excluding synthetic cannabinoids)","MDMA"],"matrix":[[7833,5097,1806,1382,181,568,0,2,17,142],[4133,4590,2638,1475,1,439,0,317,0,1],[567,1207,477,259,1304,144,0,0,27,199],[0,393,503,199,38,68,961,630,21,4],[57,429,4,212,32,0,0,0,309,2],[89,315,0,83,13,13,0,0,101,75],[0,3,6,4,76,6,0,0,0,1],[1,3,0,0,3,1,0,0,0,1],[0,0,0,1,4,0,0,0,0,0]]},"stats":{"triples":517316,"seizures":42821,"contraband":43641,"articles":3338,"arrests":1490,"places":2313,"drug_classes":116}};
+
+const KIND = {Seizing:'--seizing',Contraband:'--contraband',Place:'--place',Agency:'--agency',
+  Article:'--article',Literal:'--literal',Currency:'--currency',Source:'--place',
+  Scope:'--literal',Other:'--literal'};
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+const s = DATA.stats;
+document.getElementById('stats').innerHTML = [
+  [s.triples.toLocaleString(),'triples'],
+  [s.seizures.toLocaleString(),'seizure events'],
+  [s.contraband.toLocaleString(),'contraband'],
+  [s.articles.toLocaleString(),'news articles'],
+  [s.places.toLocaleString(),'places'],
+  [s.drug_classes,'drug classes'],
+].map(([n,l])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+
+let net=null;
+function draw(nodes, edges){
+  document.getElementById('pane').hidden = true;
+  document.getElementById('net').style.display='';
+  if(net){net.destroy();net=null;}
+  net = new vis.Network(document.getElementById('net'),
+    {nodes:new vis.DataSet(nodes), edges:new vis.DataSet(edges)},
+    {
+      physics:{solver:'forceAtlas2Based',
+        forceAtlas2Based:{gravitationalConstant:-58,springLength:120,springConstant:0.05,avoidOverlap:0.6},
+        stabilization:{iterations:260}},
+      interaction:{hover:true,tooltipDelay:120},
+      nodes:{shape:'dot',size:13,font:{color:cssv('--ink'),size:12,face:'IBM Plex Sans'},
+             borderWidth:1.5},
+      edges:{color:{color:cssv('--rule2'),highlight:cssv('--accent')},width:1,
+             font:{size:9.5,color:cssv('--ink3'),face:'IBM Plex Mono',strokeWidth:3,
+                   strokeColor:cssv('--ground'),align:'middle'},
+             arrows:{to:{enabled:true,scaleFactor:.45}},smooth:{type:'dynamic'}}
+    });
+}
+function legend(items){
+  document.getElementById('legendWrap').hidden = !items.length;
+  document.getElementById('legend').innerHTML = items.map(([c,l])=>
+    `<div class="lg"><span class="dot" style="background:${cssv(c)}"></span>${l}</div>`).join('');
+}
+
+/* ---------- schema ---------- */
+function viewSchema(){
+  document.getElementById('title').textContent='Ontology schema';
+  document.getElementById('desc').textContent=
+    'Classes and the object properties connecting them. Teal = published DTO, amber = the dtox: extension added to make the data expressible.';
+  document.getElementById('pick').innerHTML='';
+  const nodes=DATA.schema.nodes.map(n=>({id:n.id,label:n.label,
+    color:{background:n.ns==='dtox'?cssv('--contraband'):cssv('--seizing'),
+           border:n.ns==='dtox'?cssv('--contraband'):cssv('--seizing')},size:16}));
+  const edges=DATA.schema.edges.map((e,i)=>({id:i,from:e.from,to:e.to,label:e.label,
+    dashes:e.ns==='sub', color:{color:e.ns==='sub'?cssv('--rule2'):cssv('--rule2')}}));
+  draw(nodes,edges);
+  legend([['--seizing','Published DTO class'],['--contraband','dtox: extension class']]);
+}
+
+/* ---------- instance examples ---------- */
+let exIdx=0;
+function viewExample(){
+  document.getElementById('title').textContent='Extracted incidents';
+  document.getElementById('desc').textContent=
+    'Real seizures extracted from NCB bulletin articles. Each hexagon of nodes is one article parsed into ontology instances — every value traceable to its source.';
+  const p=document.getElementById('pick');
+  p.innerHTML=DATA.examples.map((e,i)=>
+    `<button data-i="${i}" aria-selected="${i===exIdx}">#${i+1}</button>`).join('');
+  p.querySelectorAll('button').forEach(b=>b.onclick=()=>{exIdx=+b.dataset.i;viewExample();});
+  const ex=DATA.examples[exIdx];
+  document.getElementById('desc').textContent = ex.headline || document.getElementById('desc').textContent;
+  const nodes=ex.graph.nodes.map(n=>({id:n.id,label:n.label,
+    shape:n.kind==='Literal'?'box':'dot',
+    size:n.kind==='Seizing'?19:13,
+    color:{background:cssv(KIND[n.kind]||'--literal'),border:cssv(KIND[n.kind]||'--literal')},
+    font:n.kind==='Literal'?{color:cssv('--ink'),size:11}:{color:cssv('--ink'),size:12}}));
+  const edges=ex.graph.edges.map((e,i)=>({id:i,from:e.from,to:e.to,label:e.label}));
+  draw(nodes,edges);
+  legend([['--seizing','Seizure event'],['--contraband','Contraband'],['--place','Place'],
+          ['--agency','Agency'],['--article','News article'],['--currency','Currency'],
+          ['--literal','Literal value']]);
+}
+
+/* ---------- flows ---------- */
+function viewFlows(){
+  document.getElementById('title').textContent='Country × drug';
+  document.getElementById('desc').textContent=
+    'Seizure records per country and substance, across both sources. Colour scales with the square root of the count, so smaller cells stay visible.';
+  document.getElementById('pick').innerHTML='';
+  document.getElementById('net').style.display='none';
+  const pane=document.getElementById('pane'); pane.hidden=false;
+  const f=DATA.flows, max=Math.max(...f.matrix.flat());
+  const rows=f.countries.map((c,i)=>{
+    const tds=f.matrix[i].map(v=>{
+      const t=max?Math.sqrt(v)/Math.sqrt(max):0;
+      const bg=v?`color-mix(in srgb, ${cssv('--accent')} ${Math.round(t*78)}%, transparent)`:'transparent';
+      return `<td><span class="cell" style="background:${bg}">${v?v.toLocaleString():'·'}</span></td>`;
+    }).join('');
+    return `<tr><td>${c}</td>${tds}</tr>`;
+  }).join('');
+  pane.innerHTML=`<div style="overflow-x:auto"><table>
+    <thead><tr><th>Country</th>${f.drugs.map(d=>`<th>${d.replace(/\s*\(.*?\)/,'')}</th>`).join('')}</tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    <p class="note">Counts are <strong>records</strong>, not quantities — a country reporting at finer
+    granularity shows more rows without necessarily seizing more. Afghanistan and Pakistan dominate
+    because they report individual cases; Bangladesh has 92 records total and Nepal and Bhutan have none
+    at all in UNODC, which is why the press corpus matters for those countries.</p>`;
+  legend([]);
+}
+
+const VIEWS={schema:viewSchema,example:viewExample,flows:viewFlows};
+document.querySelectorAll('#views button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#views button').forEach(x=>x.setAttribute('aria-selected',x===b));
+    VIEWS[b.dataset.v]();
+  };
+});
+viewSchema();
+</script>

@@ -1,0 +1,150 @@
+@prefix dto:  <https://w3id.org/def/DTO/> .
+@prefix dtox: <https://w3id.org/def/DTO/ext#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+#################################################################
+#  DTO-EXT : additive extension to the Drug Trafficking Ontology
+#
+#  NOTE ON THE NAMESPACE
+#  <https://w3id.org/def/DTO/ext#> is NOT yet registered or resolvable.
+#  It is a placeholder chosen to sit naturally under the published DTO
+#  namespace. Replace it before any publication.
+#
+#  Nothing here modifies the published DTO. Every term is new and lives
+#  in the dtox: namespace. The only interaction with dto: is via
+#  rdfs:subClassOf / rdfs:domain / rdfs:range references.
+#
+#  WHY THIS IS NEEDED
+#  Published DTO v2.0 has 40 classes, 21 object properties and
+#  ZERO datatype properties. Without datatype properties there is no way
+#  to attach a quantity, a date, a monetary amount or a place name to
+#  anything -- so the abstract's stated attributes ("quantity, value,
+#  geography, and time") cannot be expressed. It also has no Place class,
+#  which leaves dto:isLocatedIn with seven domains and no range.
+#################################################################
+
+<https://w3id.org/def/DTO/ext#> a owl:Ontology ;
+    rdfs:label "DTO-EXT: additive extension to the Drug Trafficking Ontology"@en ;
+    rdfs:comment "Adds datatype properties, a Place class, drug/transport/location vocabularies aligned to UNODC, and source provenance. Additive only." ;
+    owl:imports <https://w3id.org/def/DTO/> ;
+    dct:created "2026-09-20" .
+
+#################################################################
+#  Classes
+#################################################################
+
+dtox:Place a owl:Class ;
+    rdfs:label "Place"@en ;
+    rdfs:comment "A geographic place. Supplies the missing range for dto:isLocatedIn." .
+
+dtox:Country a owl:Class ; rdfs:subClassOf dtox:Place ; rdfs:label "Country"@en .
+dtox:AdministrativeRegion a owl:Class ; rdfs:subClassOf dtox:Place ; rdfs:label "Administrative region"@en .
+dtox:City a owl:Class ; rdfs:subClassOf dtox:Place ; rdfs:label "City"@en .
+
+dtox:Drug a owl:Class ;
+    rdfs:subClassOf dto:Contraband ;
+    rdfs:label "Drug"@en ;
+    rdfs:comment "A controlled substance. Subclasses follow the UNODC IDS drug class vocabulary." .
+
+dtox:SeizureLocationType a owl:Class ;
+    rdfs:label "Seizure location type"@en ;
+    rdfs:comment "Kind of physical place a seizure occurred at. Individuals follow the UNODC IDS 'Physical Seizure Location' vocabulary." .
+
+dtox:TransportMode a owl:Class ;
+    rdfs:label "Transport mode"@en ;
+    rdfs:comment "Means of conveyance. Individuals follow the UNODC IDS 'Trafficking Mode of Transportation' vocabulary." .
+
+dtox:SourceDocument a owl:Class ;
+    rdfs:label "Source document"@en ;
+    rdfs:comment "A document an assertion was derived from. The DTO paper states the ontology should 'provide specifics regarding the information source'; no such class exists in the published version." .
+
+dtox:NewsArticle a owl:Class ; rdfs:subClassOf dtox:SourceDocument ; rdfs:label "News article"@en .
+dtox:Dataset a owl:Class ; rdfs:subClassOf dtox:SourceDocument ; rdfs:label "Dataset"@en .
+
+#################################################################
+#  Datatype properties  (the core gap in published DTO)
+#################################################################
+
+dtox:hasQuantity a owl:DatatypeProperty ;
+    rdfs:domain dto:Contraband ; rdfs:range xsd:decimal ;
+    rdfs:label "has quantity"@en .
+
+dtox:hasUnit a owl:DatatypeProperty ;
+    rdfs:domain dto:Contraband ; rdfs:range xsd:string ;
+    rdfs:label "has unit of measure"@en ;
+    rdfs:comment "kg, g, tablet/pill, lt, unit, Ampoule, Acres, Hectars, plant, other." .
+
+dtox:hasDate a owl:DatatypeProperty ;
+    rdfs:range xsd:date ; rdfs:label "has date"@en .
+
+dtox:hasAmount a owl:DatatypeProperty ;
+    rdfs:domain dto:Currency ; rdfs:range xsd:decimal ;
+    rdfs:label "has monetary amount"@en .
+
+dtox:hasCurrencyCode a owl:DatatypeProperty ;
+    rdfs:domain dto:Currency ; rdfs:range xsd:string ;
+    rdfs:label "has currency code"@en .
+
+dtox:hasName a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:label "has name"@en .
+dtox:hasISO3 a owl:DatatypeProperty ; rdfs:domain dtox:Country ; rdfs:range xsd:string ; rdfs:label "has ISO3 code"@en .
+dtox:personCount a owl:DatatypeProperty ; rdfs:range xsd:integer ;
+    rdfs:label "person count"@en ;
+    rdfs:comment "Number of people involved where individual identities are not given (common in news reports: 'three arrested')." .
+
+dtox:headline a owl:DatatypeProperty ; rdfs:domain dtox:NewsArticle ; rdfs:range xsd:string ; rdfs:label "headline"@en .
+dtox:sourceURL a owl:DatatypeProperty ; rdfs:domain dtox:SourceDocument ; rdfs:range xsd:anyURI ; rdfs:label "source URL"@en .
+dtox:publisher a owl:DatatypeProperty ; rdfs:domain dtox:SourceDocument ; rdfs:range xsd:string ; rdfs:label "publisher"@en .
+
+#################################################################
+#  Object properties
+#################################################################
+
+dtox:occurredAt a owl:ObjectProperty ;
+    rdfs:range dtox:Place ; rdfs:label "occurred at"@en ;
+    rdfs:comment "Usable alternative to dto:isLocatedIn, which has no range in published DTO." .
+
+dtox:seizureOf a owl:ObjectProperty ;
+    rdfs:domain dto:Seizing ; rdfs:range dto:Contraband ;
+    rdfs:label "seizure of"@en ;
+    rdfs:comment "Links a dto:Seizing event to what was seized. Published DTO only has dto:hasSeized with domain dto:Police, so a seizure event itself cannot be linked to its contraband." .
+
+dtox:hasDrugType a owl:ObjectProperty ;
+    rdfs:domain dto:Contraband ; rdfs:range dtox:Drug ; rdfs:label "has drug type"@en .
+
+dtox:usedTransport a owl:ObjectProperty ;
+    rdfs:range dtox:TransportMode ; rdfs:label "used transport"@en .
+
+dtox:atLocationType a owl:ObjectProperty ;
+    rdfs:domain dto:Seizing ; rdfs:range dtox:SeizureLocationType ;
+    rdfs:label "at location type"@en .
+
+dtox:reportedIn a owl:ObjectProperty ;
+    rdfs:range dtox:SourceDocument ; rdfs:label "reported in"@en ;
+    rdfs:comment "Provenance: the document this individual was asserted from." .
+
+dtox:conductedBy a owl:ObjectProperty ;
+    rdfs:range dto:Legal_entity ; rdfs:label "conducted by"@en ;
+    rdfs:comment "Links an action (seizure, raid, arrest) to the agency that carried it out." .
+
+dtox:withinCountry a owl:ObjectProperty ;
+    rdfs:domain dtox:Place ; rdfs:range dtox:Country ; rdfs:label "within country"@en .
+
+#################################################################
+#  Report scope -- incident-level vs aggregate-level assertions
+#################################################################
+
+dtox:ReportScope a owl:Class ;
+    rdfs:label "Report scope"@en ;
+    rdfs:comment "Whether an assertion describes a single incident or an aggregate/summary covering many. Quantities must not be summed across the two without care." .
+
+dtox:IncidentLevel a dtox:ReportScope ; rdfs:label "Incident level"@en ;
+    rdfs:comment "Describes one seizure/arrest event." .
+dtox:AggregateLevel a dtox:ReportScope ; rdfs:label "Aggregate level"@en ;
+    rdfs:comment "Describes totals over a period, a destruction of accumulated stock, or an analytical report." .
+
+dtox:hasReportScope a owl:ObjectProperty ;
+    rdfs:range dtox:ReportScope ; rdfs:label "has report scope"@en .

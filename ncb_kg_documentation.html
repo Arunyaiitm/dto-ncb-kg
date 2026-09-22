@@ -1,0 +1,279 @@
+<title>NCB Drug Trafficking Knowledge Graph</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/dist/vis-network.min.js"></script>
+<style>
+:root{
+ --ink:#15191c;--ink2:#444d54;--ink3:#77838b;
+ --ground:#fbfaf8;--panel:#fff;--panel2:#f1efeb;--rule:#dedad3;--rule2:#c5bfb6;
+ --dto:#0f5b4c;--dto-soft:#e1efe9;--dtox:#8a5a12;--dtox-soft:#f7efe0;
+ --shadow:0 1px 2px rgba(20,24,28,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --ink:#e7eae6;--ink2:#aeb7ba;--ink3:#7e8a90;
+ --ground:#111514;--panel:#181d1c;--panel2:#1f2523;--rule:#2c3432;--rule2:#3e4744;
+ --dto:#6fc2a8;--dto-soft:#182e28;--dtox:#d8ab63;--dtox-soft:#2b2518;
+ --shadow:0 1px 2px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"]{
+ --ink:#e7eae6;--ink2:#aeb7ba;--ink3:#7e8a90;
+ --ground:#111514;--panel:#181d1c;--panel2:#1f2523;--rule:#2c3432;--rule2:#3e4744;
+ --dto:#6fc2a8;--dto-soft:#182e28;--dtox:#d8ab63;--dtox-soft:#2b2518;
+ --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+ font-family:"Source Serif 4",Georgia,serif;font-size:16.5px;line-height:1.62}
+.wrap{display:grid;grid-template-columns:238px minmax(0,1fr);max-width:1180px;margin:0 auto;gap:40px;padding:0 24px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr;gap:0}nav.toc{position:static!important;border-right:none!important;padding:16px 0!important;max-height:none!important}}
+
+nav.toc{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;
+ padding:34px 18px 34px 0;border-right:1px solid var(--rule);
+ font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13px}
+nav.toc h4{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:0 0 10px;font-weight:600}
+nav.toc a{display:block;color:var(--ink2);text-decoration:none;padding:3.5px 0}
+nav.toc a:hover{color:var(--dto)}
+nav.toc .sub{padding-left:13px;font-size:12.3px}
+
+main{padding:34px 0 90px;min-width:0}
+.banner{border:1px solid var(--rule);border-radius:4px;background:var(--panel);
+ padding:22px 24px;margin-bottom:26px;box-shadow:var(--shadow)}
+h1{font-size:clamp(25px,4vw,34px);line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.015em;text-wrap:balance}
+.rel{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;color:var(--ink3);margin:0 0 16px}
+dl.meta{display:grid;grid-template-columns:auto 1fr;gap:5px 16px;margin:0;
+ font-family:"IBM Plex Sans",sans-serif;font-size:13px}
+dl.meta dt{color:var(--ink3);font-weight:500}
+dl.meta dd{margin:0;color:var(--ink2)}
+h2{font-size:22px;font-weight:700;margin:46px 0 4px;padding-top:20px;border-top:1px solid var(--rule);letter-spacing:-.01em}
+h2 .num{font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:600;color:var(--dto);display:block;margin-bottom:6px;letter-spacing:.07em}
+h3{font-size:17.5px;font-weight:600;margin:30px 0 8px}
+p{margin:0 0 14px;max-width:68ch}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.87em}
+a{color:var(--dto)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--dto);outline-offset:2px;border-radius:2px}
+
+.ns{background:var(--panel2);border:1px solid var(--rule);border-radius:4px;padding:13px 16px;
+ font-family:"IBM Plex Mono",monospace;font-size:12.5px;overflow-x:auto;white-space:pre;margin:14px 0}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 20px}
+.chip{font-family:"IBM Plex Mono",monospace;font-size:11.5px;padding:3.5px 8px;border-radius:3px;
+ border:1px solid var(--rule2);text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+.chip.dto{background:var(--dto-soft);border-color:var(--dto);color:var(--dto)}
+.chip.dtox{background:var(--dtox-soft);border-color:var(--dtox);color:var(--dtox)}
+.chip b{font-weight:500;opacity:.72;font-size:10.5px}
+
+.term{border:1px solid var(--rule);border-left-width:3px;border-radius:0 4px 4px 0;
+ background:var(--panel);padding:14px 18px;margin:0 0 10px;box-shadow:var(--shadow)}
+.term.dto{border-left-color:var(--dto)}
+.term.dtox{border-left-color:var(--dtox)}
+.term h4{margin:0 0 3px;font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:500}
+.term h4 .tag{font-family:"IBM Plex Sans",sans-serif;font-size:9.5px;letter-spacing:.09em;
+ text-transform:uppercase;padding:2px 6px;border-radius:2px;margin-left:8px;vertical-align:1.5px;font-weight:600}
+.term.dto .tag{background:var(--dto-soft);color:var(--dto)}
+.term.dtox .tag{background:var(--dtox-soft);color:var(--dtox)}
+.term p{font-size:14.5px;margin:6px 0 8px;color:var(--ink2);max-width:66ch}
+.term dl{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:0;
+ font-family:"IBM Plex Sans",sans-serif;font-size:12.5px}
+.term dt{color:var(--ink3)}
+.term dd{margin:0;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink2)}
+.count{float:right;font-family:"IBM Plex Sans",sans-serif;font-size:12px;color:var(--ink3);
+ font-variant-numeric:tabular-nums}
+
+#diagram{height:470px;border:1px solid var(--rule);border-radius:4px;background:var(--panel);margin:16px 0 8px}
+.cap{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;color:var(--ink3);margin:0 0 18px;max-width:70ch}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:1px;
+ background:var(--rule);border:1px solid var(--rule);border-radius:4px;overflow:hidden;margin:16px 0}
+.stat{background:var(--panel);padding:14px 16px}
+.stat .n{font-family:"IBM Plex Sans",sans-serif;font-size:22px;font-weight:600;
+ font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat .l{font-family:"IBM Plex Sans",sans-serif;font-size:11.5px;color:var(--ink3);margin-top:3px}
+
+table{border-collapse:collapse;width:100%;font-family:"IBM Plex Sans",sans-serif;font-size:13px;margin:12px 0}
+th,td{text-align:left;padding:7px 11px;border-bottom:1px solid var(--rule)}
+th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);font-weight:600;background:var(--panel2)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:4px}
+.note{border:1px solid var(--rule);border-left:3px solid var(--dtox);background:var(--dtox-soft);
+ padding:14px 18px;border-radius:0 4px 4px 0;margin:18px 0}
+.note b{display:block;font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;letter-spacing:.11em;
+ text-transform:uppercase;color:var(--dtox);margin-bottom:7px}
+.note p{font-size:14.5px;margin:0 0 8px}.note p:last-child{margin:0}
+footer{border-top:1px solid var(--rule);margin-top:50px;padding-top:20px;
+ font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;color:var(--ink3)}
+</style>
+
+<div class="wrap">
+<nav class="toc">
+ <h4>Contents</h4>
+ <a href="#intro">1. Introduction</a>
+ <a href="#overview">2. Overview</a>
+ <a href="#diagram-s" class="sub">2.1 Model diagram</a>
+ <a href="#terms-s" class="sub">2.2 Terms at a glance</a>
+ <a href="#classes">3. Classes</a>
+ <a href="#objprops">4. Object properties</a>
+ <a href="#dataprops">5. Data properties</a>
+ <a href="#drugs">6. Drug taxonomy</a>
+ <a href="#instances">7. Instance statistics</a>
+ <a href="#prov">8. Provenance</a>
+ <a href="#limits">9. Known limitations</a>
+</nav>
+
+<main>
+<div class="banner">
+ <h1>NCB Drug Trafficking Knowledge Graph</h1>
+ <p class="rel">Model documentation &middot; Version 1.0 &middot; Released 2026&#8209;09&#8209;22</p>
+ <dl class="meta">
+  <dt>Source corpus</dt><dd>NCB News Bulletin, 79 daily issues (2026&#8209;06&#8209;28 &rarr; 2026&#8209;09&#8209;16)</dd>
+  <dt>Publisher</dt><dd>Narcotics Control Bureau, Ministry of Home Affairs, India</dd>
+  <dt>Base ontology</dt><dd>DTO v2.0 &mdash; Tiwari, Kejriwal &amp; Mihindukulasooriya (2025)</dd>
+  <dt>Extension</dt><dd><span class="mono">dtox:</span> additive, this work</dd>
+  <dt>Serialisation</dt><dd><span class="mono">kg_ncb.ttl</span> (Turtle)</dd>
+ </dl>
+</div>
+
+<p>This document describes the ontology model used by the knowledge graph extracted from
+the NCB News Bulletin corpus. It follows the structure of the published DTO documentation,
+with one addition: because this documents a <em>populated</em> graph rather than a schema
+alone, every term carries the number of instances asserted against it.</p>
+
+<h2 id="intro"><span class="num">SECTION 1</span>Introduction</h2>
+<p>The graph is built against two namespaces. Terms in <code>dto:</code> are the published
+Drug Trafficking Ontology, used unmodified. Terms in <code>dtox:</code> are an additive
+extension introduced here, because published DTO declares no datatype properties and so
+cannot express a quantity, a date, a monetary amount or a place name.</p>
+<div class="ns">@prefix dto:  &lt;https://w3id.org/def/DTO/&gt; .
+@prefix dtox: &lt;https://w3id.org/def/DTO/ext#&gt; .
+@prefix kg:   &lt;https://w3id.org/def/DTO/kg/&gt; .</div>
+<div class="note"><b>Namespace caveat</b>
+<p>The <code>dtox:</code> namespace is <strong>not yet registered or resolvable</strong>. It was
+chosen to sit naturally beneath the published DTO namespace and must be replaced before
+publication.</p></div>
+
+<h2 id="overview"><span class="num">SECTION 2</span>Overview</h2>
+<h3 id="diagram-s">2.1 Model diagram</h3>
+<div id="diagram"></div>
+<p class="cap">The shape of the NCB knowledge graph. Teal nodes are published DTO classes;
+amber nodes are extension classes. Drag to rearrange, scroll to zoom. Every article becomes a
+<code>dtox:NewsArticle</code> provenance node that all extracted events point back to.</p>
+<h3 id="terms-s">2.2 Terms at a glance</h3>
+<div class="chips" id="chipsAll"></div>
+
+<h2 id="classes"><span class="num">SECTION 3</span>Classes</h2>
+<div id="classList"></div>
+
+<h2 id="objprops"><span class="num">SECTION 4</span>Object properties</h2>
+<div id="objList"></div>
+
+<h2 id="dataprops"><span class="num">SECTION 5</span>Data properties</h2>
+<p>These are the terms that published DTO lacks entirely. Without them the corpus's
+quantities, dates and values have nowhere to go.</p>
+<div id="dataList"></div>
+
+<h2 id="drugs"><span class="num">SECTION 6</span>Drug taxonomy</h2>
+<p>Substances named in the press are mapped onto the UNODC IDS controlled vocabulary, so
+text-derived drugs and UNODC-derived drugs are the same classes and can be joined. Indian
+street names are handled: <em>ganja</em> &rarr; cannabis herb, <em>charas</em> &rarr; cannabis
+resin, <em>MD</em> &rarr; mephedrone, <em>yaba</em> &rarr; methamphetamine, <em>brown sugar</em>
+and <em>smack</em> &rarr; heroin.</p>
+<div class="tw"><table><thead><tr><th>Class</th><th>Label</th><th class="n">Instances</th></tr></thead>
+<tbody id="drugRows"></tbody></table></div>
+
+<h2 id="instances"><span class="num">SECTION 7</span>Instance statistics</h2>
+<div class="stats" id="stats"></div>
+<p>Figures are for the NCB half of the graph only. The companion UNODC graph
+(<code>kg_unodc.ttl</code>, 449,725 triples from 41,424 seizure records) uses the same
+vocabulary and merges with this one without conflict.</p>
+
+<h2 id="prov"><span class="num">SECTION 8</span>Provenance</h2>
+<p>Every assertion is traceable. Each extracted event carries <code>dtox:reportedIn</code>
+pointing at the article it came from, and each article carries its original publisher URL
+on <code>dtox:sourceURL</code> plus the bulletin it appeared in. No assertion in the graph is
+free-floating.</p>
+<div class="ns">kg:seizure/ncb_00005  a dto:Seizing ;
+    dtox:conductedBy    kg:agency/AR , kg:agency/EXCISE ;
+    dtox:hasDate        "2026-06-28" ;
+    dtox:hasReportScope dtox:IncidentLevel ;
+    dtox:occurredAt     kg:place/admin_IND_Assam ;
+    dtox:reportedIn     kg:article/ncb_00005 ;
+    dtox:seizureOf      kg:contraband/ncb_00005_0 .
+
+kg:contraband/ncb_00005_0  a dto:Contraband , dtox:Drug_Heroin ;
+    dtox:hasQuantity 9.08 ; dtox:hasUnit "g" ;
+    dto:isWorth      kg:currency/ncb_00005 .</div>
+
+<h2 id="limits"><span class="num">SECTION 9</span>Known limitations</h2>
+<div class="note"><b>Extraction is rule-based &mdash; recall is a lower bound</b>
+<p>Entities are found by gazetteer and regular expression, not a trained model. Every
+extraction is traceable to a pattern you can read, but coverage is incomplete: of 1,397
+press seizure events only <strong>719 carry a quantity</strong>.</p>
+<p>That gap is deliberate. A quantity is attached <em>only</em> when an article names exactly
+one substance. Where a report mentions both heroin and ganja there is no reliable way to know
+which figure belongs to which, so nothing is attached rather than guessing.</p></div>
+<div class="note"><b>Incident vs aggregate reporting</b>
+<p>A news article may describe one incident or a period total (&ldquo;seized since 2024&rdquo;,
+a drug-destruction ceremony, an annual report). Summing across the two double-counts.
+Every event therefore carries <code>dtox:hasReportScope</code>, either
+<code>dtox:IncidentLevel</code> (1,085 seizures) or <code>dtox:AggregateLevel</code> (312).
+Quantities and values are attached only at incident level.</p></div>
+
+<footer>Generated from <code>kg_ncb.ttl</code>. Structure follows the Widoco convention used by
+the published DTO documentation. Instance counts computed directly from the graph.</footer>
+</main>
+</div>
+
+<script>
+const D = {"classes":[{"uri":"dtox:NewsArticle","label":"News article","def":"","n":3338,"super":["dtox:SourceDocument"],"ns":"dtox"},{"uri":"dto:Contraband","label":"Contraband","def":"Drug trafficking is a global illicit trade involving the cultivation, manufacture, distribution and sale of substances which are subject to drug prohibition laws.","n":2217,"super":[],"ns":"dto"},{"uri":"dto:Arrest","label":"Arrest","def":"Arrest is the legal action of taking someone into custody, typically by law enforcement, for alleged criminal activity","n":1490,"super":["dto:Legal_action"],"ns":"dto"},{"uri":"dto:Seizing","label":"Seizing","def":"Seizing is the legal act of taking possession of property, often by authorities, due to suspicion of illegal activity or as evidence","n":1397,"super":["dto:Legal_action"],"ns":"dto"},{"uri":"dto:Drug_trafficking","label":"Drug trafficking","def":"Drug trafficking is a global illicit trade involving the cultivation, manufacture, distribution and sale of substances which are subject to drug prohibition laws","n":882,"super":["dto:Illegal_action"],"ns":"dto"},{"uri":"dto:Possession","label":"Possession","def":"Possession is the act of having or owning something, whether tangible or intangible","n":573,"super":["dto:Illegal_action"],"ns":"dto"},{"uri":"dto:Smuggling","label":"Smuggling","def":"Smuggling is the illegal transportation of goods or people across borders to avoid customs duties or import/export restrictions","n":540,"super":["dto:Illegal_action"],"ns":"dto"},{"uri":"dto:Raid","label":"Raid","def":"A raid is a sudden and organized law enforcement operation to search premises, often to seize illegal goods or arrest suspects","n":431,"super":["dto:Legal_action"],"ns":"dto"},{"uri":"dto:Currency","label":"Currency","def":"a medium of exchange for the supply of goods and services.","n":394,"super":[],"ns":"dto"},{"uri":"dto:Manufacturing","label":"Manufacturing","def":"Manufacturing is the process of converting raw materials into finished products through the use of machinery, tools, and labor","n":223,"super":["dto:Illegal_action"],"ns":"dto"},{"uri":"dtox:AdministrativeRegion","label":"Administrative region","def":"","n":34,"super":["dtox:Place"],"ns":"dtox"},{"uri":"dto:Legal_entity","label":"Legal entity","def":"A legal entity is an organization or individual that has legal rights and obligations","n":13,"super":[],"ns":"dto"},{"uri":"dtox:Country","label":"Country","def":"","n":10,"super":["dtox:Place"],"ns":"dtox"},{"uri":"dto:Police","label":"Police","def":"Police are government agencies responsible for maintaining public order, enforcing laws, and investigating crimes within a jurisdiction","n":3,"super":["dto:Organization"],"ns":"dto"},{"uri":"dtox:Dataset","label":"Dataset","def":"","n":1,"super":["dtox:SourceDocument"],"ns":"dtox"}],"drugs":[{"uri":"dtox:Drug_Heroin","label":"Heroin","n":555,"super":["dtox:Opioids"]},{"uri":"dtox:Drug_Cannabis_herb_marijuana","label":"Cannabis herb (marijuana)","n":451,"super":["dtox:Cannabis_type_excluding_synthetic_cannabinoids"]},{"uri":"dtox:Drug_Methamphetamine","label":"Methamphetamine","n":170,"super":["dtox:Amphetamine_type_stimulants_excluding_ecstasy"]},{"uri":"dtox:Drug_MDMA","label":"MDMA","n":155,"super":["dtox:Ecstasy_type_substances"]},{"uri":"dtox:Drug_Mephedrone_4_methylmethcathinone","label":"Mephedrone (4-methylmethcathinone)","n":140,"super":["dtox:Amphetamine_type_stimulants_excluding_ecstasy"]},{"uri":"dtox:Drug_Opium","label":"Opium","n":132,"super":["dtox:Opioids"]},{"uri":"dtox:Drug_Cannabis_resin_hashish","label":"Cannabis resin (hashish)","n":126,"super":["dtox:Cannabis_type_excluding_synthetic_cannabinoids"]},{"uri":"dtox:Drug_Poppy_straw","label":"Poppy straw","n":123,"super":["dtox:Opioids"]},{"uri":"dtox:Drug_Cocaine","label":"Cocaine","n":114,"super":["dtox:Cocaine_type"]},{"uri":"dtox:Drug_Codeine","label":"Codeine","n":92,"super":["dtox:Opioids"]},{"uri":"dtox:Drug_Tramadol","label":"Tramadol","n":33,"super":["dtox:Opioids"]},{"uri":"dtox:Drug_Alprazolam","label":"Alprazolam","n":32,"super":["dtox:Sedatives_and_Tranquillizers"]},{"uri":"dtox:Drug_Amphetamine","label":"Amphetamine","n":23,"super":["dtox:Amphetamine_type_stimulants_excluding_ecstasy"]},{"uri":"dtox:Drug_Morphine","label":"Morphine","n":16,"super":["dtox:Opioids"]},{"uri":"dtox:Drug_Fentanyl","label":"Fentanyl","n":13,"super":["dtox:Opioids"]},{"uri":"dtox:Drug_Ketamine","label":"Ketamine","n":12,"super":["dtox:New_psychoactive_substances"]},{"uri":"dtox:Drug_Buprenorphine","label":"Buprenorphine","n":7,"super":["dtox:Opioids"]},{"uri":"dtox:Drug_Ephedrine","label":"Ephedrine","n":7,"super":["dtox:Precursors"]},{"uri":"dtox:Drug_Nitrazepam","label":"Nitrazepam","n":7,"super":["dtox:Sedatives_and_Tranquillizers"]},{"uri":"dtox:Drug_Pseudoephedrine","label":"Pseudoephedrine","n":5,"super":["dtox:Precursors"]},{"uri":"dtox:Drug_Diazepam","label":"Diazepam","n":4,"super":["dtox:Sedatives_and_Tranquillizers"]}],"props":[{"uri":"dtox:reportedIn","label":"reported in","def":"Provenance: the document this individual was asserted from.","n":11091,"kind":"object","domain":[],"range":["dtox:SourceDocument"],"ns":"dtox"},{"uri":"dtox:hasReportScope","label":"has report scope","def":"","n":6225,"kind":"object","domain":[],"range":["dtox:ReportScope"],"ns":"dtox"},{"uri":"dtox:hasDate","label":"has date","def":"","n":6225,"kind":"datatype","domain":[],"range":["xsd:date"],"ns":"dtox"},{"uri":"dtox:occurredAt","label":"occurred at","def":"Usable alternative to dto:isLocatedIn, which has no range in published DTO.","n":4222,"kind":"object","domain":[],"range":["dtox:Place"],"ns":"dtox"},{"uri":"dtox:conductedBy","label":"conducted by","def":"Links an action (seizure, raid, arrest) to the agency that carried it out.","n":3859,"kind":"object","domain":[],"range":["dto:Legal_entity"],"ns":"dtox"},{"uri":"dtox:sourceURL","label":"source URL","def":"","n":3339,"kind":"datatype","domain":["dtox:SourceDocument"],"range":["xsd:anyURI"],"ns":"dtox"},{"uri":"dtox:publisher","label":"publisher","def":"","n":3339,"kind":"datatype","domain":["dtox:SourceDocument"],"range":["xsd:string"],"ns":"dtox"},{"uri":"dtox:headline","label":"headline","def":"","n":3338,"kind":"datatype","domain":["dtox:NewsArticle"],"range":["xsd:string"],"ns":"dtox"},{"uri":"dtox:seizureOf","label":"seizure of","def":"Links a dto:Seizing event to what was seized. Published DTO only has dto:hasSeized with domain dto:Police, so a seizure event itself cannot be linked to its contraband.","n":2217,"kind":"object","domain":["dto:Seizing"],"range":["dto:Contraband"],"ns":"dtox"},{"uri":"dtox:personCount","label":"person count","def":"Number of people involved where individual identities are not given (common in news reports: 'three arrested').","n":900,"kind":"datatype","domain":[],"range":["xsd:integer"],"ns":"dtox"},{"uri":"dtox:hasQuantity","label":"has quantity","def":"","n":719,"kind":"datatype","domain":["dto:Contraband"],"range":["xsd:decimal"],"ns":"dtox"},{"uri":"dtox:hasUnit","label":"has unit of measure","def":"kg, g, tablet/pill, lt, unit, Ampoule, Acres, Hectars, plant, other.","n":719,"kind":"datatype","domain":["dto:Contraband"],"range":["xsd:string"],"ns":"dtox"},{"uri":"dtox:hasCurrencyCode","label":"has currency code","def":"","n":394,"kind":"datatype","domain":["dto:Currency"],"range":["xsd:string"],"ns":"dtox"},{"uri":"dtox:hasAmount","label":"has monetary amount","def":"","n":394,"kind":"datatype","domain":["dto:Currency"],"range":["xsd:decimal"],"ns":"dtox"},{"uri":"dto:isWorth","label":"isWorth","def":"","n":394,"kind":"object","domain":["dto:Asset","dto:Contraband"],"range":["dto:Currency"],"ns":"dto"},{"uri":"dtox:hasName","label":"has name","def":"","n":60,"kind":"datatype","domain":[],"range":["xsd:string"],"ns":"dtox"},{"uri":"dtox:withinCountry","label":"within country","def":"","n":34,"kind":"object","domain":["dtox:Place"],"range":["dtox:Country"],"ns":"dtox"},{"uri":"dtox:hasISO3","label":"has ISO3 code","def":"","n":10,"kind":"datatype","domain":["dtox:Country"],"range":["xsd:string"],"ns":"dtox"}],"diagram":{"nodes":[{"id":"dtox:NewsArticle","label":"NewsArticle","ns":"dtox","n":3338},{"id":"dto:Seizing","label":"Seizing","ns":"dto","n":1397},{"id":"dto:Arrest","label":"Arrest","ns":"dto","n":1490},{"id":"dto:Raid","label":"Raid","ns":"dto","n":431},{"id":"dto:Contraband","label":"Contraband","ns":"dto","n":2217},{"id":"dto:Currency","label":"Currency","ns":"dto","n":394},{"id":"dtox:Country","label":"Country","ns":"dtox","n":10},{"id":"dtox:AdministrativeRegion","label":"AdministrativeRegion","ns":"dtox","n":34},{"id":"dto:Legal_entity","label":"Legal entity","ns":"dto","n":13},{"id":"dto:Police","label":"Police","ns":"dto","n":3},{"id":"dtox:Dataset","label":"Dataset","ns":"dtox","n":1},{"id":"dto:Smuggling","label":"Smuggling","ns":"dto","n":540},{"id":"dto:Possession","label":"Possession","ns":"dto","n":573},{"id":"dto:Manufacturing","label":"Manufacturing","ns":"dto","n":223},{"id":"dto:Drug_trafficking","label":"Drug trafficking","ns":"dto","n":882}],"edges":[{"from":"dto:Seizing","to":"dto:Contraband","label":"seizureOf"},{"from":"dto:Contraband","to":"dto:Currency","label":"isWorth"},{"from":"dto:Seizing","to":"dtox:NewsArticle","label":"reportedIn"},{"from":"dto:Arrest","to":"dtox:NewsArticle","label":"reportedIn"},{"from":"dto:Raid","to":"dtox:NewsArticle","label":"reportedIn"},{"from":"dtox:NewsArticle","to":"dtox:Dataset","label":"reportedIn"},{"from":"dto:Seizing","to":"dtox:AdministrativeRegion","label":"occurredAt"},{"from":"dto:Arrest","to":"dtox:AdministrativeRegion","label":"occurredAt"},{"from":"dto:Seizing","to":"dto:Legal_entity","label":"conductedBy"},{"from":"dto:Arrest","to":"dto:Legal_entity","label":"conductedBy"},{"from":"dtox:AdministrativeRegion","to":"dtox:Country","label":"withinCountry"}]},"stats":{"triples":66858,"core_classes":15,"drug_classes":21,"properties":18,"articles":3338,"seizures":1397,"arrests":1490,"contraband":2217}};
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* diagram */
+const nodes = D.diagram.nodes.map(n=>({id:n.id,label:n.label,shape:'dot',
+  size: n.n>2000?24:n.n>800?18:13,
+  color:{background:cssv(n.ns==='dtox'?'--dtox':'--dto'),border:cssv(n.ns==='dtox'?'--dtox':'--dto')},
+  font:{color:cssv('--ink'),size:13,face:'IBM Plex Sans'}}));
+const edges = D.diagram.edges.map((e,i)=>({id:i,from:e.from,to:e.to,label:e.label}));
+new vis.Network(document.getElementById('diagram'),
+  {nodes:new vis.DataSet(nodes),edges:new vis.DataSet(edges)},
+  {physics:{solver:'forceAtlas2Based',
+     forceAtlas2Based:{gravitationalConstant:-62,springLength:135,avoidOverlap:.65},
+     stabilization:{iterations:300}},
+   nodes:{borderWidth:1.5},
+   edges:{color:{color:cssv('--rule2'),highlight:cssv('--dto')},width:1,
+     arrows:{to:{enabled:true,scaleFactor:.45}},smooth:{type:'dynamic'},
+     font:{size:10,color:cssv('--ink3'),face:'IBM Plex Mono',strokeWidth:3,strokeColor:cssv('--ground')}},
+   interaction:{hover:true}});
+
+/* chips */
+document.getElementById('chipsAll').innerHTML =
+  [...D.classes, ...D.props].map(t=>
+    `<a class="chip ${t.ns}" href="#${t.uri.replace(':','_')}">${t.uri}<b>${t.n.toLocaleString()}</b></a>`).join('');
+
+/* term blocks */
+const termHTML = t => {
+  const dl = [];
+  if(t.super?.length) dl.push(['subClassOf', t.super.join(', ')]);
+  if(t.domain?.length) dl.push(['domain', t.domain.join(', ')]);
+  if(t.range?.length)  dl.push(['range',  t.range.join(', ')]);
+  return `<div class="term ${t.ns}" id="${t.uri.replace(':','_')}">
+    <span class="count">${t.n.toLocaleString()} instances</span>
+    <h4>${t.uri}<span class="tag">${t.ns==='dtox'?'extension':'published DTO'}</span></h4>
+    ${t.def?`<p>${t.def}</p>`:''}
+    ${dl.length?`<dl>${dl.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`:''}
+  </div>`;
+};
+document.getElementById('classList').innerHTML = D.classes.map(termHTML).join('');
+document.getElementById('objList').innerHTML =
+  D.props.filter(p=>p.kind==='object').map(termHTML).join('');
+document.getElementById('dataList').innerHTML =
+  D.props.filter(p=>p.kind!=='object').map(termHTML).join('');
+
+document.getElementById('drugRows').innerHTML = D.drugs.map(d=>
+  `<tr><td class="mono">${d.uri}</td><td>${d.label}</td><td class="n">${d.n.toLocaleString()}</td></tr>`).join('');
+
+const s=D.stats;
+document.getElementById('stats').innerHTML=[
+ [s.triples.toLocaleString(),'triples'],[s.articles.toLocaleString(),'news articles'],
+ [s.seizures.toLocaleString(),'seizure events'],[s.arrests.toLocaleString(),'arrest events'],
+ [s.contraband.toLocaleString(),'contraband'],[s.core_classes,'core classes'],
+ [s.drug_classes,'drug classes'],[s.properties,'properties'],
+].map(([n,l])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+</script>
