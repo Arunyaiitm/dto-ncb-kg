@@ -8,6 +8,7 @@ built against the **Drug Trafficking Ontology (DTO)**.
 
 - **[Knowledge graph documentation](ncb_kg_documentation.html)** — model, term cross-reference, instance counts
 - **[Interactive visualisation](knowledge_graph_visualization.html)** — schema graph, extracted incidents, country × drug
+- **[Data collection report](data_collection_report.html)** — sources, provenance, and assessment of the underlying datasets
 
 ## Files
 

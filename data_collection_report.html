@@ -1,0 +1,555 @@
+<title>DTO Data Collection Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ink:#14181c;
+    --ink-2:#39424b;
+    --ink-3:#66717c;
+    --ground:#fbfbf9;
+    --paper:#ffffff;
+    --panel:#f2f4f2;
+    --rule:#dde1dd;
+    --rule-2:#c9cfc9;
+    --accent:#14594a;
+    --accent-soft:#e3efe9;
+    --warn:#8a5a12;
+    --warn-soft:#f6efe1;
+    --gap:#8d2f2f;
+    --gap-soft:#f6e6e4;
+    --shadow:0 1px 2px rgba(20,24,28,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e7eae6;
+      --ink-2:#b3bcb6;
+      --ink-3:#818d86;
+      --ground:#121614;
+      --paper:#171c1a;
+      --panel:#1d2421;
+      --rule:#2c3531;
+      --rule-2:#3c4541;
+      --accent:#6fc2a8;
+      --accent-soft:#1c302a;
+      --warn:#d8ab63;
+      --warn-soft:#2b2518;
+      --gap:#d98a82;
+      --gap-soft:#2e1e1d;
+      --shadow:0 1px 2px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#e7eae6; --ink-2:#b3bcb6; --ink-3:#818d86;
+    --ground:#121614; --paper:#171c1a; --panel:#1d2421;
+    --rule:#2c3531; --rule-2:#3c4541;
+    --accent:#6fc2a8; --accent-soft:#1c302a;
+    --warn:#d8ab63; --warn-soft:#2b2518;
+    --gap:#d98a82; --gap-soft:#2e1e1d;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:"Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size:17px; line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:0 24px 96px}
+  @media(max-width:600px){ body{font-size:16px} .wrap{padding:0 16px 64px} }
+
+  /* ---- masthead ---- */
+  .masthead{border-bottom:2px solid var(--ink);padding:48px 0 22px;margin-bottom:36px}
+  .kicker{
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:14px;
+  }
+  h1{
+    font-size:clamp(28px,4.6vw,42px);line-height:1.14;font-weight:700;
+    margin:0 0 14px;text-wrap:balance;letter-spacing:-.015em;
+  }
+  .standfirst{font-size:19px;color:var(--ink-2);margin:0 0 22px;max-width:62ch}
+  .meta{
+    display:flex;flex-wrap:wrap;gap:6px 28px;
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13px;color:var(--ink-3);
+  }
+  .meta b{font-weight:500;color:var(--ink-2)}
+
+  /* ---- citation ---- */
+  .cite{
+    background:var(--panel);border-left:3px solid var(--accent);
+    padding:18px 22px;margin:28px 0 8px;font-size:15.5px;line-height:1.55;
+  }
+  .cite .ttl{font-style:italic}
+  .cite a{word-break:break-word}
+  .cite .lines{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13px;color:var(--ink-2);margin-top:10px;display:grid;gap:3px}
+
+  /* ---- headings ---- */
+  h2{
+    font-size:24px;font-weight:700;letter-spacing:-.01em;
+    margin:56px 0 4px;padding-top:22px;border-top:1px solid var(--rule);
+    text-wrap:balance;
+  }
+  h2 .num{
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13px;font-weight:600;
+    color:var(--accent);display:block;margin-bottom:7px;letter-spacing:.08em;
+  }
+  h3{font-size:18px;font-weight:600;margin:32px 0 6px;color:var(--ink)}
+  p{margin:0 0 16px;max-width:68ch}
+  ul,ol{margin:0 0 16px;padding-left:22px;max-width:68ch}
+  li{margin-bottom:8px}
+  a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:.06em}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  strong{font-weight:600}
+  code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.88em}
+
+  /* ---- contents ---- */
+  nav.toc{
+    background:var(--paper);border:1px solid var(--rule);border-radius:3px;
+    padding:20px 24px;margin:34px 0 8px;box-shadow:var(--shadow);
+  }
+  nav.toc h4{
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;font-weight:600;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:0 0 12px;
+  }
+  nav.toc ol{
+    list-style:none;padding:0;margin:0;max-width:none;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:2px 28px;
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;
+    counter-reset:toc;
+  }
+  nav.toc li{margin:0;counter-increment:toc;display:flex;gap:10px;padding:3px 0}
+  nav.toc li::before{
+    content:counter(toc);color:var(--ink-3);font-variant-numeric:tabular-nums;
+    min-width:16px;text-align:right;font-size:12.5px;padding-top:1px;
+  }
+  nav.toc a{color:var(--ink-2);text-decoration:none}
+  nav.toc a:hover{color:var(--accent);text-decoration:underline}
+
+  /* ---- key figures ---- */
+  .figs{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px;background:var(--rule);border:1px solid var(--rule);
+    margin:26px 0 8px;border-radius:3px;overflow:hidden;
+  }
+  .fig{background:var(--paper);padding:16px 18px}
+  .fig .n{
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:26px;font-weight:600;line-height:1.1;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;color:var(--ink);
+  }
+  .fig .l{
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:12px;line-height:1.35;
+    color:var(--ink-3);margin-top:6px;
+  }
+
+  /* ---- tables ---- */
+  .tw{overflow-x:auto;margin:20px 0 22px;border:1px solid var(--rule);border-radius:3px;background:var(--paper)}
+  table{border-collapse:collapse;width:100%;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13.5px}
+  th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{
+    font-weight:600;font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--ink-3);background:var(--panel);white-space:nowrap;
+  }
+  tr:last-child td{border-bottom:none}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  caption{
+    caption-side:bottom;text-align:left;padding:10px 14px;
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:12px;color:var(--ink-3);
+    border-top:1px solid var(--rule);
+  }
+
+  /* ---- callouts ---- */
+  .note{
+    border:1px solid var(--rule);border-left:3px solid var(--accent);
+    background:var(--accent-soft);padding:16px 20px;margin:24px 0;border-radius:0 3px 3px 0;
+  }
+  .note.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+  .note.gap{border-left-color:var(--gap);background:var(--gap-soft)}
+  .note .h{
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;font-weight:600;
+    letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;color:var(--accent);
+  }
+  .note.warn .h{color:var(--warn)}
+  .note.gap .h{color:var(--gap)}
+  .note p:last-child{margin-bottom:0}
+  .note p{max-width:64ch}
+
+  /* ---- hash verification block ---- */
+  .verify{
+    background:var(--panel);border:1px solid var(--rule);border-radius:3px;
+    padding:16px 18px;margin:20px 0;overflow-x:auto;
+  }
+  .verify .row{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;
+    white-space:nowrap;display:flex;gap:16px;align-items:baseline;padding:4px 0;
+  }
+  .verify .hash{color:var(--accent);font-weight:500}
+  .verify .who{color:var(--ink-3);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:12px}
+  .verify .verdict{
+    margin-top:12px;padding-top:11px;border-top:1px solid var(--rule-2);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13px;color:var(--ink-2);
+  }
+
+  /* ---- scale comparison ---- */
+  .scale{margin:26px 0;display:grid;gap:12px}
+  .scale .bar{display:grid;grid-template-columns:180px 1fr;gap:14px;align-items:center}
+  .scale .lab{
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13px;color:var(--ink-2);
+    text-align:right;line-height:1.3;
+  }
+  .scale .track{display:flex;align-items:center;gap:10px;min-width:0}
+  .scale .fill{height:22px;border-radius:2px;background:var(--accent);min-width:3px}
+  .scale .fill.muted{background:var(--rule-2)}
+  .scale .val{
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13px;font-weight:600;
+    font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap;
+  }
+  @media(max-width:560px){
+    .scale .bar{grid-template-columns:1fr;gap:4px}
+    .scale .lab{text-align:left}
+  }
+
+  /* ---- footer ---- */
+  .foot{
+    margin-top:64px;padding-top:22px;border-top:2px solid var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:13px;color:var(--ink-3);
+  }
+  .foot p{max-width:70ch;margin-bottom:10px}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker">Data Collection Report</div>
+    <h1>Source data for extending the Drug Trafficking Ontology to the Global South</h1>
+    <p class="standfirst">Provenance assessment of one held sample, and a corpus and validation layer assembled to support the paper's stated next objective.</p>
+    <div class="meta">
+      <span><b>Prepared</b> 19 September 2026</span>
+      <span><b>Collection</b> ~1.5&nbsp;GB, 7 source families</span>
+      <span><b>All sources</b> retrieved from the publishing agency</span>
+    </div>
+  </header>
+
+  <div class="cite">
+    Tiwari, S., Kejriwal, M., &amp; Mihindukulasooriya, N. (2025). <span class="ttl">Ontological Modeling of Drug Trafficking in the Global South Using Newspaper Data.</span> Springer.
+    <div class="lines">
+      <span>DOI: <a href="https://doi.org/10.1007/978-3-031-99554-5_14">10.1007/978-3-031-99554-5_14</a></span>
+      <span>Ontology URI: <a href="https://w3id.org/def/DTO/">https://w3id.org/def/DTO/</a></span>
+    </div>
+  </div>
+
+  <nav class="toc">
+    <h4>Contents</h4>
+    <ol>
+      <li><a href="#s1">Summary</a></li>
+      <li><a href="#s2">Assessment of the held sample</a></li>
+      <li><a href="#s3">Corpus assembled</a></li>
+      <li><a href="#s4">Structured validation data</a></li>
+      <li><a href="#s5">Principal finding</a></li>
+      <li><a href="#s6">Proposed ontology extensions</a></li>
+      <li><a href="#s7">Data-quality issues</a></li>
+      <li><a href="#s8">Limitations</a></li>
+      <li><a href="#s9">Next steps</a></li>
+      <li><a href="#s10">Provenance &amp; licensing</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="s1"><span class="num">SECTION 1</span>Summary</h2>
+
+  <p>The paper's published corpus is <strong>20 newspaper articles / 250 sentences</strong>, drawn from a single outlet (<em>The Hindu</em>) in a single country. The authors state their next objective as extending coverage to "at least ten countries in the Global South."</p>
+
+  <p>This report assesses one candidate source already held, and documents a wider collection assembled to support that extension.</p>
+
+  <div class="figs">
+    <div class="fig"><div class="n">3,338</div><div class="l">full-text articles extracted</div></div>
+    <div class="fig"><div class="n">5.87M</div><div class="l">characters of article text</div></div>
+    <div class="fig"><div class="n">324</div><div class="l">distinct source domains</div></div>
+    <div class="fig"><div class="n">2.53M</div><div class="l">UNODC seizure events, 144 countries</div></div>
+  </div>
+
+  <ol>
+    <li>The held sample is <strong>confirmed authentic</strong> by cryptographic comparison against the publishing authority's own server, and is judged the <strong>correct and preferable primary corpus</strong> for this work.</li>
+    <li>A newspaper corpus of 3,338 full-text articles across 324 source domains and four countries has been assembled from that source — approximately <strong>167×</strong> the article count of the published corpus.</li>
+    <li>A structured validation layer of <strong>2,526,077 event-level drug-seizure records</strong> (UNODC, 2011–2024) has been obtained, together with the official controlled vocabularies it carries.</li>
+    <li>A methodologically significant finding: <strong>UNODC's event-level data is close to absent for South Asia</strong> — which provides a principled justification for the newspaper-based approach in precisely the region the paper targets.</li>
+  </ol>
+
+  <h2 id="s2"><span class="num">SECTION 2</span>Assessment of the held sample</h2>
+
+  <h3>2.1 &ensp;Identification and authenticity</h3>
+
+  <div class="tw">
+    <table>
+      <tbody>
+        <tr><th>File as held</th><td><code>data_ncb/712.pdf</code></td></tr>
+        <tr><th>Identified as</th><td><strong>NCB News Bulletin, 16.09.2026</strong></td></tr>
+        <tr><th>Publisher</th><td>Narcotics Control Bureau, Ministry of Home Affairs, Government of India</td></tr>
+        <tr><th>Canonical URL</th><td><code>https://narcoticsindia.nic.in/news/712.pdf</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The file was re-retrieved independently from the NCB server and compared by SHA-256 digest:</p>
+
+  <div class="verify">
+    <div class="row"><span class="hash">d9b61e6025e562f29f98d25bf87b7e5570a82aa465fa404640cc2bdf8af327ba</span><span class="who">held copy</span></div>
+    <div class="row"><span class="hash">d9b61e6025e562f29f98d25bf87b7e5570a82aa465fa404640cc2bdf8af327ba</span><span class="who">freshly retrieved</span></div>
+    <div class="verdict">Digests identical — the file is bit-for-bit the government-published document, unmodified. Bulletin numbering was further confirmed as sequential and dated (<code>697.pdf</code> = 01.09.2026 … <code>712.pdf</code> = 16.09.2026).</div>
+  </div>
+
+  <h3>2.2 &ensp;Is it the right kind of data?</h3>
+
+  <p><strong>Yes</strong> — and it is arguably a stronger choice than the direct newspaper scraping used in the published work.</p>
+
+  <ul>
+    <li><strong>It is newspaper data</strong>, the source type the ontology is designed around. A single bulletin carries ~70 articles from <em>The Hindu</em>, <em>The Times of India</em>, <em>The Indian Express</em>, <em>The Tribune</em>, <em>Dainik Bhaskar</em>, <em>Amar Ujala</em> and many regional outlets.</li>
+    <li><strong>Provenance is citable and stable.</strong> Each bulletin has a permanent, dated government URL, and each article within it prints its own original publisher URL — materially better for reproducibility than ad-hoc scraping.</li>
+    <li><strong>Selection is made by the national drug-control authority</strong>, not the researcher, removing one source of investigator bias in corpus construction.</li>
+    <li><strong>It is already multi-country.</strong> The single held bulletin contains incidents from Nepal, Bangladesh and Sri Lanka alongside India — directly serving the paper's stated goal.</li>
+    <li><strong>Entity density matches the ontology</strong> — Drug, Person/Trafficker, Arrest, Seizure, Quantity, Value, Location, Date, Law Enforcement Agency, Transport, Legal Action, Asset.</li>
+    <li><strong>The editorial sections are effectively free requirements analysis.</strong> Each bulletin's <em>Emerging Modus Operandi</em> and <em>Key Trends</em> sections describe trafficking methods in structured prose — drone delivery across the Amritsar border, ambulances used to evade checkpoints, cocaine moved as pharmaceutical consignments, cannabis intercropped with maize and cotton.</li>
+  </ul>
+
+  <h3>2.3 &ensp;Limitations requiring disclosure</h3>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Limitation</th><th>Methodological consequence</th></tr></thead>
+      <tbody>
+        <tr><td>A <strong>press digest, not a statistical database</strong></td><td>Frequency counts must not be treated as incidence. Use for KG population and IE; validate aggregates against NCRB or UNODC.</td></tr>
+        <tr><td><strong>Curatorial selection bias</strong></td><td>NCB chooses which clippings appear; coverage skews to large or newsworthy seizures. Not a random sample.</td></tr>
+        <tr><td><strong>Duplicate incidents</strong> across outlets</td><td>Event-level de-duplication required before entity counting.</td></tr>
+        <tr><td>Hindi items are <strong>machine-translated</strong></td><td>Translation artefacts; inconsistent transliteration of names and places.</td></tr>
+        <tr><td>Some pages are <strong>image-only</strong></td><td>One bulletin in 79 yields no extractable text and requires OCR.</td></tr>
+        <tr><td><strong>Heterogeneous units and currencies</strong></td><td>kg / g / tablets / vials / ampoules; ₹ crore / lakh plus other currencies. Quantity and Value need unit- and currency-typed properties.</td></tr>
+        <tr><td><strong>Third-party copyright</strong></td><td>Article text remains the newspapers' property. Extraction is appropriate; redistribution of raw text is not — release annotations plus source URLs.</td></tr>
+        <tr><td><strong>Rolling ~3-month archive</strong></td><td>NCB deletes older bulletins. Material not captured now is unrecoverable; periodic re-collection is necessary.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="s3"><span class="num">SECTION 3</span>Corpus assembled from this source</h2>
+
+  <p>The complete NCB bulletin archive held on the server was retrieved and parsed — 79 bulletins spanning 2026-06-28 to 2026-09-16.</p>
+
+  <div class="scale">
+    <div class="bar">
+      <div class="lab">Published corpus<br><span style="color:var(--ink-3);font-size:12px">(Tiwari et&nbsp;al., 1 domain)</span></div>
+      <div class="track"><div class="fill muted" style="width:0.6%"></div><div class="val">20 articles</div></div>
+    </div>
+    <div class="bar">
+      <div class="lab">This collection<br><span style="color:var(--ink-3);font-size:12px">(324 domains, 4 countries)</span></div>
+      <div class="track"><div class="fill" style="width:100%"></div><div class="val">3,338 articles</div></div>
+    </div>
+  </div>
+
+  <div class="tw">
+    <table>
+      <tbody>
+        <tr><th>Bulletins</th><td class="n">79</td><td>2026-06-28 → 2026-09-16 (full server archive)</td></tr>
+        <tr><th>Full-text articles</th><td class="n">3,338</td><td>each with its original publisher URL</td></tr>
+        <tr><th>Total article text</th><td class="n">5,875,449</td><td>characters</td></tr>
+        <tr><th>Complete source URLs</th><td class="n">100%</td><td>3,338 of 3,338</td></tr>
+        <tr><th>Distinct publishers</th><td class="n">426</td><td>—</td></tr>
+        <tr><th>Distinct source domains</th><td class="n">324</td><td>—</td></tr>
+        <tr><th>Countries</th><td class="n">4</td><td>India, Nepal, Bangladesh, Sri Lanka</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Regional distribution (NCB's own classification): North 1,929 · East 547 · South 338 · West 248 · North-East 170 · International 54. Leading domains: bhaskar.com (746), amarujala.com (344), timesofindia.indiatimes.com (268), livehindustan.com (150).</p>
+
+  <h3>3.1 &ensp;Extraction method and reliability</h3>
+
+  <p>Two layers were produced, of differing reliability, and the distinction should be preserved downstream:</p>
+
+  <ul>
+    <li><strong>Article bodies (reliable).</strong> Read from page text; each carries its original publisher URL. Recommended for text mining.</li>
+    <li><strong>Index metadata (less reliable).</strong> The bulletins' NEWS INDEX tables are the only source of region and publisher attribution. Recovered from PDF table geometry, because linear text extraction merges the Publisher and Headline columns irrecoverably. <strong>77 of 3,286 index rows (2.3%)</strong> are flagged in the output as having a questionable publisher cell.</li>
+  </ul>
+
+  <div class="note warn">
+    <div class="h">Why this is documented</div>
+    <p>The bulletins are not typeset consistently — column positions, headline chunking (per-headline vs. per-word), script (Latin vs. Devanagari) and even vertical text direction vary between issues. A naïve parser fails <em>silently</em>: an early fixed-threshold version produced 1,437 spurious "publishers" from a corpus containing a few hundred real outlets. A separate defect truncated the source URLs of 641 articles (19%); this was corrected, and all 3,338 now carry complete, citable URLs.</p>
+  </div>
+
+  <h2 id="s4"><span class="num">SECTION 4</span>Structured data for validation and vocabulary alignment</h2>
+
+  <h3>4.1 &ensp;UNODC Individual Drug Seizures (IDS)</h3>
+
+  <p>Mandated by the 1961, 1971 and 1988 UN drug conventions and reported by Member States. <strong>One record = one seizure event.</strong> Obtained via the <a href="https://dmp.unodc.org/downloadIDS">UNODC Drugs Monitoring Platform</a>.</p>
+
+  <div class="figs">
+    <div class="fig"><div class="n">2,526,077</div><div class="l">seizure events</div></div>
+    <div class="fig"><div class="n">2011–2024</div><div class="l">coverage</div></div>
+    <div class="fig"><div class="n">144</div><div class="l">countries / territories</div></div>
+    <div class="fig"><div class="n">339</div><div class="l">distinct drug values</div></div>
+  </div>
+
+  <p>This dataset is, in effect, an officially attested instance set for the ontology:</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>IDS field</th><th>Corresponding DTO concept</th></tr></thead>
+      <tbody>
+        <tr><td>Seizure date</td><td>Seizure event, time attribute</td></tr>
+        <tr><td>Country, ISO3, region, subregion, city, administrative region</td><td>Location / geography attribute</td></tr>
+        <tr><td>Drug/substance (339 values) + 184-row taxonomy</td><td><code>Drug</code> and subclasses</td></tr>
+        <tr><td>Quantity seized + measurement unit (10 values)</td><td>Quantity attribute with units</td></tr>
+        <tr><td>Physical seizure location (18 values)</td><td><code>SeizureLocationType</code> — <strong>not presently in DTO</strong></td></tr>
+        <tr><td>Trafficking mode of transportation (12 values)</td><td><code>Transport</code> / <code>TransportMode</code></td></tr>
+        <tr><td>Source, reporting channel</td><td>Provenance</td></tr>
+      </tbody>
+      <caption>Transport mode is unrecorded for ~91% of records; seizure dates are frequently recorded as 31 December of the reporting year rather than the true date.</caption>
+    </table>
+  </div>
+
+  <h3>4.2 &ensp;Supporting official statistics</h3>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Source</th><th>Content</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://www.unodc.org/unodc/en/data-and-analysis/world-drug-report-2025-annex.html">UNODC World Drug Report 2025</a> Statistical Annex (31 files)</td><td>Seizures 2019–2023, prices and purities, drug-related crime, prevalence, cultivation, clandestine laboratories</td></tr>
+        <tr><td><a href="https://narcoticsindia.nic.in/">NCB Annual Reports</a> (30 volumes, 1994–2025)</td><td>State- and drug-wise seizure totals, cases, arrests, major operations</td></tr>
+        <tr><td>NCB "Important Seizures" (2018–2024)</td><td>Narrative descriptions of individual major seizure events</td></tr>
+        <tr><td><a href="https://www.ncrb.gov.in/">NCRB <em>Crime in India</em></a> (59 tables, 2018–2022)</td><td>Table 20B.3 <em>Seizures under the NDPS Act</em>; Table 20D.4 NCB returns; SLL arrest and disposal tables</td></tr>
+        <tr><td><a href="https://www.datos.gov.co/Seguridad-y-Defensa/Incautaci-n-de-Estupefacientes-/kk69-w2jj">Colombia — national seizure microdata</a></td><td><strong>1,978,260 event-level records</strong>, 2010–2026, with municipality and official DANE geocodes</td></tr>
+        <tr><td><a href="https://ndlea.gov.ng/annual-report">Nigeria — NDLEA Annual Reports</a> (2013–2025)</td><td>Seizures by drug and state, arrests, convictions</td></tr>
+        <tr><td><a href="https://dnc.gov.bd/pages/annual-reports">Bangladesh — DNC Annual Drug Reports</a> (2017–2024)</td><td>Zone-wise seizures (notably yaba and methamphetamine from Myanmar), cases, arrests</td></tr>
+        <tr><td><a href="https://www.nddcb.gov.lk/nddcb-publication.php">Sri Lanka — NDDCB Handbook</a> (2017, 2022, 2025)</td><td>Arrests, seizures, treatment admissions, prices</td></tr>
+        <tr><td><a href="https://ocindex.net/downloads">GI-TOC Global Organized Crime Index</a></td><td>193 countries × 15 criminal markets (heroin, cocaine, cannabis, synthetic drugs scored separately), 2021/2023/2025</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="s5"><span class="num">SECTION 5</span>Principal finding: UNODC event data does not cover South Asia</h2>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Country</th><th class="n">IDS records</th><th>Country</th><th class="n">IDS records</th></tr></thead>
+      <tbody>
+        <tr><td>Colombia</td><td class="n">1,252,382</td><td>Mexico</td><td class="n">14,259</td></tr>
+        <tr><td>Philippines</td><td class="n">48,782</td><td>Afghanistan</td><td class="n">13,968</td></tr>
+        <tr><td>Nigeria</td><td class="n">36,662</td><td><strong>India</strong></td><td class="n"><strong>4,526</strong></td></tr>
+        <tr><td>Ecuador</td><td class="n">33,214</td><td>Peru</td><td class="n">4,523</td></tr>
+        <tr><td>Bolivia</td><td class="n">26,372</td><td>Myanmar</td><td class="n">3,015</td></tr>
+        <tr><td>Pakistan</td><td class="n">17,935</td><td><strong>Sri Lanka</strong></td><td class="n"><strong>1,100</strong></td></tr>
+        <tr><td>Kenya</td><td class="n">796</td><td>South Africa</td><td class="n">603</td></tr>
+        <tr><td>Brazil</td><td class="n">538</td><td>Thailand</td><td class="n">462</td></tr>
+        <tr><td>Ghana</td><td class="n">282</td><td><strong>Bangladesh</strong></td><td class="n"><strong>92</strong></td></tr>
+        <tr><td>Indonesia</td><td class="n">2</td><td><strong>Nepal</strong></td><td class="n"><strong>0</strong></td></tr>
+      </tbody>
+      <caption>UNODC Individual Drug Seizures, records 2011–2024.</caption>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <div class="h">A methodological caution</div>
+    <p>Colombia alone contributes approximately 50% of the global dataset, because it reports at municipality granularity while most states report only major cases. Cross-country comparisons in IDS therefore measure <em>national reporting practice</em> at least as much as trafficking activity.</p>
+  </div>
+
+  <div class="note gap">
+    <div class="h">And a positive justification for this work</div>
+    <p>UNODC holds 92 seizure records for Bangladesh and <strong>none whatsoever for Nepal</strong>. A single NCB bulletin, by contrast, carries Nepali and Bangladeshi trafficking incidents in full narrative detail, with named actors, quantities, routes and outcomes.</p>
+    <p>The two sources are <strong>complementary rather than substitutable</strong>: UNODC supplies structure and volume where states report well; the newspaper corpus supplies coverage where they do not. This is a principled, evidence-based argument for the newspaper-driven approach in exactly the region the paper targets — and is worth stating explicitly in any extension of the work.</p>
+  </div>
+
+  <h2 id="s6"><span class="num">SECTION 6</span>Proposed ontology extensions</h2>
+
+  <p>The collected data evidences several classes absent from the published ontology (40 classes, 21 object properties). Those marked below can be populated from official UNODC value lists rather than derived ad hoc from text.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Proposed class</th><th>Basis</th><th>Controlled vocabulary</th></tr></thead>
+      <tbody>
+        <tr><td><code>SeizureLocationType</code></td><td>18 UNODC values — airport, road, seaport, post office, warehouse, private dwelling, prison, territorial waters …</td><td>Available</td></tr>
+        <tr><td><code>TransportMode</code></td><td>12 UNODC values — airplane, vessel, train/bus, truck, postal/parcel, on foot, animals, metro …</td><td>Available</td></tr>
+        <tr><td><code>Drug</code> subclass hierarchy</td><td>184-row UNODC taxonomy</td><td>Available</td></tr>
+        <tr><td><code>ConcealmentMethod</code></td><td>Drone delivery, ambulances, pharmaceutical consignments, intercropping, school bags</td><td>From corpus</td></tr>
+        <tr><td><code>CommunicationChannel</code></td><td>Messaging-app coordination, internet calling</td><td>From corpus</td></tr>
+        <tr><td><code>AssetAttachment</code> / <code>ProceedsOfCrime</code></td><td>NDPS property attachment, bank-account freezes</td><td>From corpus</td></tr>
+        <tr><td><code>RehabilitationFacility</code></td><td>District-level government rehabilitation centres</td><td>From corpus</td></tr>
+        <tr><td><code>BorderCrossing</code></td><td>India–Nepal, India–Bangladesh, Myanmar and Pakistan routes</td><td>From corpus</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Aligning to the UNODC vocabularies would also make the ontology interoperable with the principal international reporting instrument in this domain. A further opportunity: India's <strong>NIDAAN</strong> (National Integrated Database on Arrested Narco-offenders) publishes its official field schema in its <a href="https://narcoordindia.gov.in/narcoordindia/Magazines/1666351520-4611-DOC-USER%20MANUAL%20of%20NIDAAN.pdf">user manual</a>. The microdata is restricted, but aligning DTO to that schema would mean the ontology speaks the Indian government's own data model.</p>
+
+  <h2 id="s7"><span class="num">SECTION 7</span>Data-quality issues encountered</h2>
+
+  <p>Recorded because they affect reproducibility and would otherwise cause silent data loss.</p>
+
+  <div class="note gap">
+    <div class="h">The NCB server truncates large downloads without error</div>
+    <p>On first collection, <strong>14 of 117 PDFs</strong> arrived incomplete while returning success. File sizes were plausible and only opening each file revealed the problem — one annual report downloaded as 196&nbsp;KB against a true size of 101&nbsp;MB; another as 25&nbsp;MB against 60&nbsp;MB. All retrieval was re-implemented to verify against <code>Content-Length</code> <em>and</em> to open each PDF, retrying with HTTP resume. Any independent collection from this source should do likewise.</p>
+  </div>
+
+  <div class="note gap">
+    <div class="h">UNODC IDS workbooks are not internally consistent</div>
+    <p>The annual worksheets do not share a column order (2011–2017 and 2018+ differ), the 2023 sheet's header is misspelled, and the transport column is named <em>Trafficking Mode of Transportation</em> rather than <em>…Transport</em>. Reading by column position, or assuming the header name, silently corrupts the data — an initial pass produced a transport column that was 100% empty and resembled missing source data rather than a defect. The data has been normalised into a single verified file with these variants handled explicitly.</p>
+  </div>
+
+  <p>Additionally, published download links on the UNODC platform point to an internal hostname path; the apparently correct public path returns an HTML error page carrying an <code>.xlsx</code> filename.</p>
+
+  <h2 id="s8"><span class="num">SECTION 8</span>Limitations of this collection</h2>
+
+  <p>Stated plainly for completeness.</p>
+
+  <ul>
+    <li><strong>The GDELT harvest is incomplete.</strong> A supplementary harvest of newspaper metadata across 18 Global South countries was attempted via the GDELT DOC 2.0 API. GDELT rate-limited the host and continued to refuse requests even at 12-second spacing; collection was stopped rather than persist against a free public service. <strong>416 article records for India only</strong> were obtained, and the status is recorded as <code>PARTIAL</code> in the output manifest. For complete coverage, GDELT's BigQuery tables should be used instead of the public API.</li>
+    <li><strong>Pakistan has no machine-readable national statistics.</strong> The Anti-Narcotics Force publishes only news images and press releases under obfuscated paths. Pakistan is covered instead by the 17,935 UNODC IDS records.</li>
+    <li><strong>Nepal has no public statistical publication.</strong> Nepali incidents are available only through the newspaper corpus; UNODC holds no records at all.</li>
+    <li><strong>NCRB <em>Crime in India</em> is unavailable for 2023 and 2024.</strong> Those years appear in the site's year selector but return no tables — they are not yet published.</li>
+    <li><strong>One NCB bulletin (2026-09-05) is image-only</strong> and requires OCR; older NCB annual reports are scanned documents and likewise require OCR for text analysis.</li>
+  </ul>
+
+  <h2 id="s9"><span class="num">SECTION 9</span>Suggested next steps</h2>
+
+  <ol>
+    <li><strong>Continue periodic collection of NCB bulletins.</strong> The archive is a rolling ~3-month window; bulletins not captured are permanently lost. Sustained collection is the only route to a corpus with temporal depth.</li>
+    <li><strong>Use UNODC IDS as an evaluation set</strong> for extracted <code>Seizure</code> instances — it provides officially attested ground truth at event level.</li>
+    <li><strong>Align <code>Drug</code>, <code>TransportMode</code> and <code>SeizureLocationType</code> to the UNODC vocabularies</strong> rather than deriving them from article text.</li>
+    <li><strong>Extend the ontology</strong> with the classes in Section 6, which the collected data already evidences.</li>
+    <li><strong>If publishing a derived dataset, release annotations and source URLs, not article text</strong>, to respect newspaper copyright. Every article in the corpus carries its original URL, so this is straightforward.</li>
+  </ol>
+
+  <h2 id="s10"><span class="num">SECTION 10</span>Provenance and licensing</h2>
+
+  <p>All material was retrieved directly from the publishing agency on 19 September 2026. Nothing is synthetic, reconstructed, or obtained via third-party aggregators. Licensing differs by source:</p>
+
+  <ul>
+    <li><strong>UN / UNODC</strong> — <a href="https://www.unodc.org/unodc/legal.html">unodc.org/unodc/legal.html</a></li>
+    <li><strong>Government of India (NCB, NCRB)</strong> — Government Open Data Use Licence – India. Note that NCB bulletins <em>reproduce third-party newspaper articles</em>, whose copyright remains with the original publishers.</li>
+    <li><strong>datos.gov.co</strong> — Colombian open data terms</li>
+    <li><strong>GI-TOC</strong> — see report front matter</li>
+    <li><strong>GDELT</strong> — metadata under GDELT terms; article text remains publisher property</li>
+  </ul>
+
+  <h3>Collection contents</h3>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Directory</th><th>Contents</th><th class="n">Volume</th></tr></thead>
+      <tbody>
+        <tr><td><code>data_ncb/</code></td><td>79 news bulletins; 30 annual reports (1994–2025); 7 important-seizure volumes; derived corpus files</td><td class="n">~1.0 GB</td></tr>
+        <tr><td><code>data_unodc/</code></td><td>IDS 2011–2024 (2,526,077 records) + normalised CSV + drug taxonomy; WDR 2025 annex (31 files); methodology</td><td class="n">~221 MB</td></tr>
+        <tr><td><code>data_globalsouth/</code></td><td>Nigeria NDLEA (13), Bangladesh DNC (10), Sri Lanka NDDCB (3)</td><td class="n">~190 MB</td></tr>
+        <tr><td><code>data_colombia/</code></td><td>1,978,260 seizure events with geocodes</td><td class="n">~112 MB</td></tr>
+        <tr><td><code>data_ncrb/</code></td><td>59 NDPS / SLL tables, 2018–2022</td><td class="n">~10 MB</td></tr>
+        <tr><td><code>data_ocindex/</code></td><td>Organized Crime Index dataset, reports, methodology</td><td class="n">~43 MB</td></tr>
+        <tr><td><code>data_gdelt/</code></td><td>416 article records (partial)</td><td class="n">~136 KB</td></tr>
+        <tr><td><code>scripts/</code></td><td>Collection, parsing, normalisation and validation scripts</td><td class="n">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="foot">
+    <p>Accompanying documentation in the collection: <code>DATA_SOURCES.md</code> (full per-source catalogue, citations and caveats), <code>README.md</code> (orientation), <code>INVENTORY.json</code> (machine-readable file listing), <code>scripts/README.md</code> (methodological notes on parsing).</p>
+    <p>Figures in this report were computed from the collected files, not estimated.</p>
+  </div>
+
+</div>
